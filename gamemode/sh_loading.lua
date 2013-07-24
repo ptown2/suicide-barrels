@@ -1,31 +1,29 @@
 module( "GLoad", package.seeall )
 
-Gamemode = GM.FolderName 
-function LoadDirectory(Directory)
-	local File, Folder = file.Find( "gamemodes/"..Gamemode.."/gamemode/"..Directory.."/*", "GAME" )
-	for k, v in pairs(File) do
-		LoadFile(Directory.."/"..v)
+GamemodeName = GM.FolderName
+
+function LoadDirectory( directory )
+	local filename, foldername = file.Find( GamemodeName.. "/gamemode/" ..directory.. "/*.lua", "LUA" )
+
+	for _, filen in ipairs( filename ) do
+		LoadFile( directory.. "/" ..filen )
 	end
-	for k,v in pairs(Folder) do
-		LoadDirectory(Directory.."/"..v)
+
+	for _, foldern in ipairs( foldername ) do
+		LoadDirectory( directory.. "/" ..foldern )
 	end
 end
 
-function LoadFile(File)
-	local FileType = string.sub(string.GetFileFromFilename(File), 1, 3)
-	if(string.lower(FileType) == "sv_") then
-		if SERVER then
-			include(File)
-		end
-	elseif(string.lower(FileType) == "cl_") then
-		AddCSLuaFile(File)
-		if CLIENT then
-			include(File)
-		end
-	elseif(string.lower(FileType) == "sh_") then
-		if SERVER then
-			AddCSLuaFile(File)
-		end
-		include(File)
+function LoadFile( filename )
+	local filetype = string.sub( string.GetFileFromFilename( filename ), 1, 3 )
+
+	if ( string.lower( filetype ) == "sv_" ) || ( filename == "init.lua" ) then
+		if SERVER then include( filename ) end
+	elseif ( string.lower( filetype ) == "cl_" ) || ( filename == "cl_init.lua" ) then
+		AddCSLuaFile( filename )
+		if CLIENT then include( filename ) end
+	elseif ( string.lower( filetype ) == "sh_" ) || ( filename == "shared.lua" ) then
+		if SERVER then AddCSLuaFile( filename ) end
+		include( filename )
 	end
 end 

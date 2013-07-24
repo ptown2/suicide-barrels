@@ -1,17 +1,17 @@
 "Gamemode"
 {
-    "base"		    "base"
-    "title"         "Suicide Barrels"
-    "version"       "1.0"
-    "menusystem"    "1"
+	"base"			"sandbox"
+	"title"			"Suicide Barrels"
+	"version"		"1.0.0.0"
+	"menusystem"	"1"
 
-    "author_name"   "ogniK & PTown2"
-    "author_email"  "N/A"
-    "author_url"    "N/A"
+	"author_name"	"ogniK & ptown2"
+	"author_email"	"xptown2x@gmail.com"
+	"author_url"	"http://suicide-barrels.googlecode.com/"
 
-    "maps"          "^sb_"
+	"maps"			"^sb_"
 
-    "icon"          ""
-    "info"          ""
-    "hide"          "0"
+	"icon"			""
+	"info"			""
+	"hide"			"0"
 }
