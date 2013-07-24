@@ -1,0 +1,17 @@
+"Gamemode"
+{
+    "base"		    "base"
+    "title"         "Suicide Barrels"
+    "version"       "1.0"
+    "menusystem"    "1"
+
+    "author_name"   "ogniK & PTown2"
+    "author_email"  "N/A"
+    "author_url"    "N/A"
+
+    "maps"          "^sb_"
+
+    "icon"          ""
+    "info"          ""
+    "hide"          "0"
+}
