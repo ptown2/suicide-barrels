@@ -29,8 +29,14 @@ function GM:GetGameDescription()
 end
 
 function GM:PrecacheResources()
+    --util.PrecacheModel()
+    --util.PrecacheSound()
 end
 
 function GM:LoadModules()
 	--GLoad.LoadDirectory( "modules" )	-- Don't load every module...
+end
+
+function GM:CreateFonts()
+    --surface.CreateFont( "HUDBig", {} )
 end
