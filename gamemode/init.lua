@@ -44,5 +44,5 @@ function GM:Initialize()
 end
 
 function GM:PlayerLoadout( pl )
-	pl:Give( "weapon_pistol" )
+	pl:Give( "weapon_sb_pistol" )
 end
