@@ -1,18 +1,6 @@
-SWEP.PrintName			= "Pistol"
-
-SWEP.DrawCrosshair		= true
-SWEP.DrawAmmo			= true
-
-SWEP.ViewModelFOV		= 70
 SWEP.ViewModel			= "models/weapons/v_pistol.mdl"
 SWEP.WorldModel			= "models/weapons/w_pistol.mdl"
 
-SWEP.AutoSwitchTo		= true
-SWEP.AutoSwitchFrom		= false
-
-SWEP.Slot				= 0
-SWEP.SlotPos			= 1
-SWEP.Weight				= 5
 SWEP.HoldType			= "pistol"
 
 SWEP.ShootSound			= Sound( "Weapon_Pistol.Single" )
@@ -25,7 +13,7 @@ SWEP.Primary.Shots		= 1
 SWEP.Primary.Spread		= 0.25
 SWEP.Primary.Delay		= 0.35
 
--- Meta Functions
+-- Meta Functions (Soon to be actually meta)
 function SWEP:GetNextReload()
 	return self.m_NextReload || 0
 end
@@ -36,6 +24,8 @@ end
 
 
 function SWEP:Initialize()
+	if !IsValid( self ) then return end	--???
+
 	self:SetWeaponHoldType( self.HoldType )
 	self:SetDeploySpeed( 1.1 )
 end
@@ -48,12 +38,14 @@ function SWEP:Deploy()
 end
 
 function SWEP:Reload()
-	--if ( self:Clip1() >= 1 ) then return end
+	if !self:DefaultReload( ACT_VM_RELOAD ) then return end		-- Fixes the double reload bug.
+	if ( self:Clip1() >= self.Primary.ClipSize ) then return end
 
-	if ( self:GetNextReload() <= CurTime() ) && self:DefaultReload( ACT_VM_RELOAD ) then
+	if ( self:GetNextReload() <= CurTime() && self:DefaultReload( ACT_VM_RELOAD ) ) then
 		self.IdleAnimation = CurTime() + self:SequenceDuration()
 		self:SetNextReload( self:SequenceDuration() )
 
+		self:SetClip1( 1 )		-- So we can do unlimited ammo.
 		self:EmitSound( self.ReloadSound )
 		self.Owner:DoReloadEvent()
 		self:SendWeaponAnim( ACT_VM_RELOAD )
