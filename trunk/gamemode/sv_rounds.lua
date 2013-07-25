@@ -13,18 +13,7 @@ function GM:AddTime( fTime )
 end
 
 function GM:Think()
-	if ( self:GetTime() >= CurTime() ) then
-		self.STATES[ self:GetState() ].Think( self )
-	end
-end
-
-function GM:SelectVictim()
-	if ( self:GetState() == STATE_PLAYING ) then
-		self.TimeLeft = GetTime() - CurTime()
-		self:SetState( STATE_PREPARING )
-	elseif ( self:GetState() == STATE_PREPARING ) then
-		-- Do a player pick here.
-	end
+	self.STATES[ self:GetState() ].Think( self )
 end
 
 function GM:EndRound( teamid )
@@ -34,15 +23,18 @@ end
 function GM:CheckTeams()
 	if ( self:GetState() ~= STATE_PLAYING ) then return end
 
-	if ( #player.GetAll() >= 1 ) then
-		if ( #team.GetPlayers( TEAM_HUMAN ) <= 0 ) then
-			self:EndRound( TEAM_OIL )
-		elseif ( #team.GetPlayers( TEAM_OIL ) <= 0 ) && ( #team.GetPlayers( TEAM_HUMAN ) > 1 ) then
-			self:SelectVictim()
-		else
-			self:EndRound( TEAM_HUMAN )
-		end
-	else
+	if ( self:GetTime() <= CurTime() ) && ( #team.GetPlayers( TEAM_HUMAN ) >= 1 ) then
+		self:EndRound( TEAM_HUMAN )
+		return
+	end
+
+	if ( #team.GetPlayers( TEAM_HUMAN ) <= 0 ) then
 		self:EndRound( TEAM_OIL )
+		return
+	end
+
+	if ( #team.GetPlayers( TEAM_OIL ) <= 0 ) && ( #team.GetPlayers( TEAM_HUMAN ) > 1 ) then
+		self:SetState( STATE_PREPARING )
+		return
 	end
 end
