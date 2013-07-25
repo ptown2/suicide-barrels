@@ -24,25 +24,12 @@ AddCSLuaFile( "sh_globals.lua" )
 
 include( "shared.lua" )
 
+include( "sv_setup.lua" )
+include( "sv_states.lua" )
+include( "sv_rounds.lua" )
 
-function GM:AddResources()
-	--resource.AddFile()
-end
+include( "obj_player_extend_sv.lua" )
 
-function GM:AddNetworkStrings()
-	--util.AddNetworkString( "" )
-end
-
-function GM:PrecacheResources()
-	--util.PrecacheModel()
-	--util.PrecacheSound()
-
-	util.PrecacheModel( "models/props_c17/oildrum001_explosive.mdl" )
-
-	for name, mdl in pairs( player_manager.AllValidModels() ) do
-		util.PrecacheModel( mdl )
-	end
-end
 
 function GM:Initialize()
 	self:AddResources()
@@ -50,89 +37,35 @@ function GM:Initialize()
 	self:PrecacheResources()
 	self:SetupSpawns()
 	self:LoadModules()
-end
 
-function GM:Think()
-	-- Do some round timer here.
-end
-
-function GM:CheckTeams()
-	-- Do team checking here.
-end
-
-function GM:SetupSpawns()
-	team.SetSpawnPoint( TEAM_HUMAN, { "info_player_start", "info_player_terrorist", "info_player_rebel", "info_player_deathmatch" } )
-	team.SetSpawnPoint( TEAM_BARREL, { "info_player_start", "info_player_counterterrorist", "info_player_combine" } )
-end
-
-function GM:SetupHuman( pl )
-	local desiredname = pl:GetInfo("cl_playermodel")
-
-	if #desiredname == 0 then
-		pl:SetModel( "models/player/alyx.mdl" )		--Just incase the player has NO model selected.
-	else
-		pl:SetModel( player_manager.TranslatePlayerModel( desiredname ) )
-	end
-
-	local pcol = Vector( pl:GetInfo( "cl_playercolor" ) ) 
-	pcol.x = math.Clamp( pcol.x, 0, 2.5 )
-	pcol.y = math.Clamp( pcol.y, 0, 2.5 )
-	pcol.z = math.Clamp( pcol.z, 0, 2.5 )
-	pl:SetPlayerColor( pcol )
-
-	local wcol = Vector( pl:GetInfo( "cl_weaponcolor" ) )
-	wcol.x = math.Clamp( wcol.x, 0, 2.5 )
-	wcol.y = math.Clamp( wcol.y, 0, 2.5 )
-	wcol.z = math.Clamp( wcol.z, 0, 2.5 )
-	pl:SetWeaponColor( wcol )
-
-	pl:SetWalkSpeed( 200 )
-	pl:SetRunSpeed( 260 )
-	pl:Give( "weapon_sb_pistol" )
-end
-
-function GM:SetupBarrel( pl )
-	pl:SetModel( "models/props_c17/oildrum001_explosive.mdl" )
-
-	pl:SetWalkSpeed( 150 )
-	pl:SetRunSpeed( 250 )
-
-	pl:SetMaxHealth( 1 )
-	pl:SetHealth( pl:GetMaxHealth() )
-
-	pl.CanExplode = CurTime() + 2
-	pl.CanTaunt = CurTime() + 1
+	self.TimeLeft = 0	-- This is when the barrel leaves. 
 end
 
 function GM:PlayerInitialSpawn( pl )
-	--[[if ( pl:IsBot() ) then
+	if ( self:GetState() == STATE_PLAYING ) then
 		pl:SetTeam( TEAM_OIL )
-		return
-	end]]
+	end
 
 	pl:SetTeam( TEAM_HUMAN )
+end
+
+function GM:PlayerDisconnected( pl )
+	self:CheckTeams()
+end
+
+function GM:OnPlayerChangedTeam( pl )
+	self:CheckTeams()
 end
 
 function GM:PlayerSpawn( pl )
 	pl:StripWeapons()
 	pl:SetColor(color_white)
 
-	if pl:Team() == TEAM_HUMAN then
+	if ( pl:Team() == TEAM_HUMAN ) && ( self:GetState() ~= STATE_PLAYING ) then
 		self:SetupHuman( pl )
 	else
 		self:SetupBarrel( pl )
 	end
-end
-
--- METATABLE THIS PLZ
-function GM:PlayerExplode( pl, range )
-	local explode = ents.Create( "env_explosion" )
-	explode:SetPos( pl:GetPos() )
-	explode:SetOwner( pl )
-	explode:Spawn()
-	explode:SetKeyValue( "iMagnitude", range )
-	explode:Fire( "Explode", 0, 0 )
-	explode:EmitSound( "weapon_AWP.Single", 400, 400 )
 end
 
 function GM:DoPlayerDeath( pl, attacker, dmginfo )
@@ -145,7 +78,7 @@ function GM:DoPlayerDeath( pl, attacker, dmginfo )
 	end
 
 	if ( pl:Team() == TEAM_OIL ) && ( pl ~= attacker ) then
-		self:PlayerExplode( pl, 96 )		-- METATABLE THIS PLZ
+		pl:SourceExplode( 96 )
 	end
 
 	if ( pl:Team() == TEAM_HUMAN ) then
@@ -171,24 +104,22 @@ function GM:KeyPress( pl, key )
 
 	if ( pl:Team() == TEAM_OIL ) then
 		if ( key == IN_ATTACK ) && ( pl.CanExplode <= CurTime() ) then
-			-- idk, I was BORED. K?
 			timer.Simple( 0.5, function() if IsValid( pl ) && pl:Alive() then pl:EmitSound( "Grenade.Blip" ) end end )
 			timer.Simple( 1.0, function() if IsValid( pl ) && pl:Alive() then pl:EmitSound( "Grenade.Blip" ) end end )
 			timer.Simple( 1.5, function() if IsValid( pl ) && pl:Alive() then pl:EmitSound( "Weapon_CombineGuard.Special1" ) end end )
-			timer.Simple( 2.5, function() if IsValid( pl ) && pl:Alive() then self:PlayerExplode( pl, 128 ) end end )
+			timer.Simple( 2.5, function() if IsValid( pl ) && pl:Alive() then pl:SourceExplode( 128 ) end end )
 			pl.CanExplode = CurTime() + 3
 		elseif ( key == IN_ATTACK2 ) && ( pl.CanTaunt <= CurTime() ) then
-			pl:EmitSound( table.Random( TAUNTS ), 90, math.random( 150, 175 ) )
+			pl:EmitSound( table.Random( self.TAUNTS ), 100, math.random( 150, 175 ) )
 			pl.CanTaunt = CurTime() + 1.5
 		end
 	end
 end
 
 function GM:CanPlayerSuicide( pl )
-	return pl:Team() == TEAM_HUMAN
+	return ( pl:Team() == TEAM_HUMAN ) && ( self:GetState() == STATE_PLAYING )
 end
 
--- idk, never tested this
 function GM:PlayerCanHearPlayersVoice( pl1, pl2 )
 	if ( pl1:IsPlayer() && pl2:IsPlayer() ) then
 		return ( pl1:Team() == pl2:Team() )
