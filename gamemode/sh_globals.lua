@@ -6,7 +6,6 @@ function GM:GetTime()
 	return GetGlobalFloat( "sb_time", 0 )
 end
 
-
 GM.TAUNTS = {
 	"vo/npc/male01/behindyou01.wav",
 	"vo/npc/male01/behindyou02.wav",
@@ -30,13 +29,3 @@ TEAM_BARRELS	= TEAM_BARREL
 
 team.SetUp( TEAM_HUMAN, "Humans", Color (0, 255, 0, 255) )
 team.SetUp( TEAM_OIL, "Barrels", Color (255, 0, 0, 255) )
-
---[[
-Layout for States
-
-[STATE_NONE] = {
-	ThinkStart = function() end,
-	Think = function() end,
-	ThinkEnd = function() end
-}
-]]
