@@ -3,7 +3,7 @@ TEAM_SURVIVOR	= TEAM_HUMAN
 
 TEAM_OIL		= 2
 TEAM_BARREL		= TEAM_OIL
-TEAM_BARRELS	= TEAM_OIL
+TEAM_BARRELS	= TEAM_BARREL
 
 TAUNTS = {
 	"vo/npc/male01/behindyou01.wav",
@@ -19,5 +19,5 @@ TAUNTS = {
 	"vo/npc/male01/runforyourlife03.wav",
 }
 
+team.SetUp( TEAM_HUMAN, "Humans", Color (0, 255, 0, 255) )
 team.SetUp( TEAM_OIL, "Barrels", Color (255, 0, 0, 255) )
-team.SetUp( TEAM_HUMAN, "Humans", Color (0, 255, 0, 255), true )

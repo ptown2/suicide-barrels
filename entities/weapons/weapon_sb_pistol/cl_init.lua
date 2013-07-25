@@ -14,18 +14,9 @@ SWEP.ViewModelFlip	= false
 SWEP.BobScale		= 1
 SWEP.SwayScale		= 1
 
-function SWEP:DrawCrosshair()
-	local x, y, size = ScrW() / 2, ScrH() / 2, 12
-
-	surface.SetDrawColor( Color( 0, 255, 0, 220 ) )
-	surface.DrawLine( x, y, x + size, y )
-	surface.DrawLine( x, y, x - size, y )
-	surface.DrawLine( x, y, x, y + size )
-	surface.DrawLine( x, y, x, y - size )
-end
-
 function SWEP:DrawHUD()
-	self:DrawCrosshair()
-
-	draw.DrawText("CLIP", "GModNotify", ScrW() - 48, ScrH() - 48, Color(255, 255, 255, 255), TEXT_ALIGN_RIGHT)
+	if self:Clip1() <= 0 then
+		draw.RoundedBox( 4, ScrW() / 2 - 40, ScrH() / 2 + 20, 80, 32, Color( 0, 0, 0, 255 ) )
+		draw.DrawText( "RELOAD", "GModNotify", ScrW() / 2, ( ScrH() / 2 ) + 28, Color( 255, 0, 0, 220 + math.sin(CurTime() * 6) * 35 ), TEXT_ALIGN_CENTER )
+	end
 end
