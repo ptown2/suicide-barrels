@@ -16,18 +16,14 @@
 	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 -------------------------------------------------------------------------- */
 
-GM.Name = "Suicide Barrels"
-GM.Author = "David and Robert"
-GM.Email = ""
-GM.Website = ""
+local meta = FindMetaTable( "Player" )
+if not meta then Error( "Failed to find player meta table." ) end
 
-include( "sh_gload.lua" )
-GLoad.LoadDirectory( "modules" )
-
-function GM:GetGameDescription() return self.Name end
-
-
-function GM:InitPostEntity()
-	GNetwork.StartupNetwork()
-	GNetwork.SetGVar("test", "Massive dickbutt!")
+function meta:SBExplode( Radius )
+	local Boom = ents.Create( "env_explosion" )
+	Boom:SetPos( self:GetPos() )
+	Boom:Spawn( )
+	Boom:SetKeyValue( "iMagnitude", tostring(Radius) )
+	Boom:Fire( "Explode", 0, 0 )
+	self:Kill( )
 end

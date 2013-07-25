@@ -24,14 +24,16 @@ function StartupNetwork( )
 end
 
 function GetWorldSpawn( )
-	local WorldSpawn = game.GetWorld( )
+	local WorldSpawn
+	if SERVER then WorldSpawn = game.GetWorld( ) end
 	if( WorldSpawn == nil ) then WorldSpawn = ents.FindByClass( "worldspawn" )[1] end
 	return WorldSpawn
 end
 
 function GetGVar( Var, DefaultValue )
 	local Worldspawn = GetWorldSpawn( )
-	if( Worldspawn:IsValid() ) then
+
+	if( Worldspawn != nil ) then
 		if( Worldspawn.GVars == nil ) then ErrorNoHalt( "You forgot to startup GNetwork!!!" ) return false end
 		if( Worldspawn.GVars[Var] == nil ) then return DefaultValue end
 		return Worldspawn.GVars[Var]
@@ -41,7 +43,7 @@ end
 
 function SetGVar( Var, Value )
 	local Worldspawn = GetWorldSpawn( )
-	if( Worldspawn:IsValid() ) then
+	if( Worldspawn != nil ) then
 		if( Worldspawn.GVars == nil ) then ErrorNoHalt( "You forgot to startup GNetwork!!!" ) return false end
 		Worldspawn.GVars[Var] = Value
 		return true
