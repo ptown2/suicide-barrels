@@ -26,17 +26,19 @@ include( "sh_globals.lua" )
 include( "sh_loading.lua" )
 
 
+function GM:PrecacheResources()
+	--util.PrecacheModel()
+	--util.PrecacheSound()
+
+	util.PrecacheModel( "models/props_c17/oildrum001_explosive.mdl" )
+
+	for name, mdl in pairs( player_manager.AllValidModels() ) do
+		util.PrecacheModel( mdl )
+	end
+end
+
 function GM:LoadModules()
 	--GLoad.LoadDirectory( "modules" )	-- Don't load every module...
-end
-
-function GM:CreateFonts()
-	--surface.CreateFont( "HUDBig", {} )
-end
-
-function GM:Initialize()
-	self:LoadModules()
-	self:CreateFonts()
 end
 
 function GM:GetGameDescription()

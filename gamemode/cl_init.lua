@@ -18,6 +18,7 @@
 
 include( "shared.lua" )
 
+
 -- This is to handle the LocalPlayer in a way where you don't IsValid 1000 times.
 MySelf = MySelf or NULL
 hook.Add( "InitPostEntity", "GetLocal", function()
@@ -28,6 +29,17 @@ hook.Add( "InitPostEntity", "GetLocal", function()
 	end
 end )
 
+
+function GM:CreateFonts()
+	--surface.CreateFont( "HUDBig", {} )
+end
+
+function GM:Initialize()
+	self:CreateFonts()
+	self:PrecacheResources()
+	self:LoadModules()
+end
+
 local trace = { mask = MASK_SHOT, mins = Vector( -1, -1, -1 ), maxs = Vector( 1, 1, 1 ), filter = {} }
 function GM:HUDDrawTargetID( teamid )
 	local start = EyePos()
@@ -36,13 +48,13 @@ function GM:HUDDrawTargetID( teamid )
 	trace.filter[1] = MySelf
 	trace.filter[2] = MySelf:GetObserverTarget()
 
-	local plent = util.TraceLine(trace).Entity
+	local plent = util.TraceLine(trace).Entity		--TraceLine or TraceHull...
 	if plent:IsPlayer() && ( plent:Team() == teamid ) then
 		surface.SetFont( "GModNotify" )
 
 		local wid, hei = surface.GetTextSize( plent:Name() )
 		local tc = team.GetColor( plent:Team() )
-		draw.RoundedBox( 4, ( ScrW() / 2 ) - ( wid * 0.5 ) - 6, ( ScrH() / 2 ) - 50, wid + 12, 32, Color( 0, 0, 0, 255 ) )
+		--draw.RoundedBox( 4, ( ScrW() / 2 ) - ( wid * 0.5 ) - 6, ( ScrH() / 2 ) - 50, wid + 12, 32, Color( 0, 0, 0, 255 ) )
 		draw.DrawText( plent:Name(), "GModNotify", ( ScrW() / 2 ), ( ScrH() / 2 ) - 42, Color( tc.r, tc.g, tc.b, 255 ), TEXT_ALIGN_CENTER )
 	end
 end

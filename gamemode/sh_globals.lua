@@ -1,11 +1,13 @@
-TEAM_HUMAN		= 1
-TEAM_SURVIVOR	= TEAM_HUMAN
+function GM:GetState()
+	return GetGlobalInt( "sb_state", 1 )
+end
 
-TEAM_OIL		= 2
-TEAM_BARREL		= TEAM_OIL
-TEAM_BARRELS	= TEAM_BARREL
+function GM:GetTime()
+	return GetGlobalFloat( "sb_time", 0 )
+end
 
-TAUNTS = {
+
+GM.TAUNTS = {
 	"vo/npc/male01/behindyou01.wav",
 	"vo/npc/male01/behindyou02.wav",
 	"vo/npc/male01/zombies01.wav",
@@ -19,5 +21,22 @@ TAUNTS = {
 	"vo/npc/male01/runforyourlife03.wav",
 }
 
+TEAM_HUMAN		= 1
+TEAM_SURVIVOR	= TEAM_HUMAN
+
+TEAM_OIL		= 2
+TEAM_BARREL		= TEAM_OIL
+TEAM_BARRELS	= TEAM_BARREL
+
 team.SetUp( TEAM_HUMAN, "Humans", Color (0, 255, 0, 255) )
 team.SetUp( TEAM_OIL, "Barrels", Color (255, 0, 0, 255) )
+
+--[[
+Layout for States
+
+[STATE_NONE] = {
+	ThinkStart = function() end,
+	Think = function() end,
+	ThinkEnd = function() end
+}
+]]
