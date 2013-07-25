@@ -16,31 +16,12 @@
 	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 -------------------------------------------------------------------------- */
 
-GM.Name		= "Suicide Barrels"
-GM.Author	= "ogniK & ptown2"
-GM.Email	= ""
-GM.Website	= ""
-GM.Revision	= 4
+GM.Name = "Suicide Barrels"
+GM.Author = "David and Robert"
+GM.Email = ""
+GM.Website = ""
 
-include( "sh_globals.lua" )
-include( "sh_loading.lua" )
+include( "sh_gload.lua" )
+GLoad.LoadDirectory( "modules" )
 
-
-function GM:PrecacheResources()
-	--util.PrecacheModel()
-	--util.PrecacheSound()
-
-	util.PrecacheModel( "models/props_c17/oildrum001_explosive.mdl" )
-
-	for name, mdl in pairs( player_manager.AllValidModels() ) do
-		util.PrecacheModel( mdl )
-	end
-end
-
-function GM:LoadModules()
-	--GLoad.LoadDirectory( "modules" )	-- Don't load every module...
-end
-
-function GM:GetGameDescription()
-	return self.Name
-end
+function GM:GetGameDescription() return self.Name end
