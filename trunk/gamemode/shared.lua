@@ -17,20 +17,27 @@
 -------------------------------------------------------------------------- */
 
 GM.Name		= "Suicide Barrels"
-GM.Author	= "David and Robert"
+GM.Author	= "ogniK & ptown2"
 GM.Email	= ""
 GM.Website	= ""
+GM.Revision	= 4
 
-include( "sh_gload.lua" )
+include( "sh_globals.lua" )
+include( "sh_loading.lua" )
 
 GLoad.LoadDirectory( "modules" )
 
+function GM:PrecacheResources()
+	--util.PrecacheModel()
+	--util.PrecacheSound()
+
+	util.PrecacheModel( "models/props_c17/oildrum001_explosive.mdl" )
+
+	for name, mdl in pairs( player_manager.AllValidModels() ) do
+		util.PrecacheModel( mdl )
+	end
+end
 
 function GM:GetGameDescription()
 	return self.Name
-end
-
-function GM:InitPostEntity()
-	GNetwork.StartupNetwork()
-	GNetwork.SetGVar("test", "Massive dickbutt!")
 end
