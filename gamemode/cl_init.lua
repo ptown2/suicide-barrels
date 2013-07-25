@@ -42,7 +42,6 @@ function GM:HUDDrawTargetID( teamid )
 
 		local wid, hei = surface.GetTextSize( plent:Name() )
 		local tc = team.GetColor( plent:Team() )
-
 		draw.RoundedBox( 4, ( ScrW() / 2 ) - ( wid * 0.5 ) - 6, ( ScrH() / 2 ) - 50, wid + 12, 32, Color( 0, 0, 0, 255 ) )
 		draw.DrawText( plent:Name(), "GModNotify", ( ScrW() / 2 ), ( ScrH() / 2 ) - 42, Color( tc.r, tc.g, tc.b, 255 ), TEXT_ALIGN_CENTER )
 	end
