@@ -10,7 +10,7 @@ SWEP.EmptySound			= Sound( "Weapon_Pistol.Empty" )
 SWEP.Primary.Damage		= 9999
 SWEP.Primary.ClipSize	= 1
 SWEP.Primary.Shots		= 1
-SWEP.Primary.Spread		= 0.25
+SWEP.Primary.Spread		= 0.2
 SWEP.Primary.Delay		= 0.35
 
 -- Meta Functions (Soon to be actually meta)
@@ -45,7 +45,7 @@ function SWEP:Reload()
 		self.IdleAnimation = CurTime() + self:SequenceDuration()
 		self:SetNextReload( self:SequenceDuration() )
 
-		self:SetClip1( 1 )		-- So we can do unlimited ammo.
+		timer.Simple( self:SequenceDuration() * 0.85, function() self:SetClip1( 1 ) end )
 		self:EmitSound( self.ReloadSound )
 		self.Owner:DoReloadEvent()
 		self:SendWeaponAnim( ACT_VM_RELOAD )
