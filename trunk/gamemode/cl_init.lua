@@ -18,6 +18,7 @@
 
 include("shared.lua")
 
-concommand.Add("sb_testnetwork", function()
+
+concommand.Add( "sb_testnetwork", function()
 	print(GNetwork.GetGVar("test", "Balls"))
 end )
