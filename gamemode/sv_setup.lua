@@ -3,7 +3,9 @@ function GM:AddResources()
 end
 
 function GM:AddNetworkStrings()
-	--util.AddNetworkString( "" )
+	util.AddNetworkString( "sb_sendstate" )
+	util.AddNetworkString( "sb_sendtime" )
+	util.AddNetworkString( "sb_teamwinner" )
 end
 
 function GM:SetupSpawns()

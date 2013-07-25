@@ -20,6 +20,10 @@ GM.TAUNTS = {
 	"vo/npc/male01/runforyourlife03.wav",
 }
 
+TIME_PLAYING	= 120
+TIME_END		= 8
+ROUND_LIMIT		= 10
+
 TEAM_HUMAN		= 1
 TEAM_SURVIVOR	= TEAM_HUMAN
 

@@ -41,3 +41,9 @@ end
 function GM:GetGameDescription()
 	return self.Name
 end
+
+function util.ChatToPlayers( str )
+	for _, pl in pairs( player.GetAll() ) do
+		pl:PrintMessage( HUD_PRINTTALK, str )
+	end
+end

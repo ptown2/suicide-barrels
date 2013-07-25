@@ -37,7 +37,6 @@ end
 function GM:Initialize()
 	self:CreateFonts()
 	self:PrecacheResources()
-	self:LoadModules()
 end
 
 local trace = { mask = MASK_SHOT, mins = Vector( -1, -1, -1 ), maxs = Vector( 1, 1, 1 ), filter = {} }
@@ -54,7 +53,7 @@ function GM:HUDDrawTargetID( teamid )
 
 		local wid, hei = surface.GetTextSize( plent:Name() )
 		local tc = team.GetColor( plent:Team() )
-		--draw.RoundedBox( 4, ( ScrW() / 2 ) - ( wid * 0.5 ) - 6, ( ScrH() / 2 ) - 50, wid + 12, 32, Color( 0, 0, 0, 255 ) )
+		draw.RoundedBox( 4, ( ScrW() / 2 ) - ( wid * 0.5 ) - 6, ( ScrH() / 2 ) - 50, wid + 12, 32, Color( 0, 0, 0, 255 ) )
 		draw.DrawText( plent:Name(), "GModNotify", ( ScrW() / 2 ), ( ScrH() / 2 ) - 42, Color( tc.r, tc.g, tc.b, 255 ), TEXT_ALIGN_CENTER )
 	end
 end
@@ -80,6 +79,9 @@ end
 
 function GM:HUDPaint()
 	if !IsValid( MySelf ) then return end
+
+	draw.DrawText( self:GetState(), "GModNotify", 32, 32, Color( 255, 255, 255, 255 ), TEXT_ALIGN_LEFT )
+	draw.DrawText( math.max( 0, self:GetTime() - CurTime() ), "GModNotify", 32, 64, Color( 255, 255, 255, 255 ), TEXT_ALIGN_LEFT )
 
 	self:HUDDrawTargetID( MySelf:Team() )
 	self:DrawDeathNotice( 0.5, 0.025 )
