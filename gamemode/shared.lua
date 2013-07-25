@@ -16,16 +16,19 @@
 	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 -------------------------------------------------------------------------- */
 
-GM.Name = "Suicide Barrels"
-GM.Author = "David and Robert"
-GM.Email = ""
-GM.Website = ""
+GM.Name		= "Suicide Barrels"
+GM.Author	= "David and Robert"
+GM.Email	= ""
+GM.Website	= ""
 
 include( "sh_gload.lua" )
+
 GLoad.LoadDirectory( "modules" )
 
-function GM:GetGameDescription() return self.Name end
 
+function GM:GetGameDescription()
+	return self.Name
+end
 
 function GM:InitPostEntity()
 	GNetwork.StartupNetwork()

@@ -19,4 +19,5 @@
 AddCSLuaFile( "cl_init.lua" )
 AddCSLuaFile( "shared.lua" )
 AddCSLuaFile( "sh_gload.lua" )
+
 include( "shared.lua" )
