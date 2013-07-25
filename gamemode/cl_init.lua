@@ -18,6 +18,6 @@
 
 include("shared.lua")
 
-function GM:Initialize()
-	GNetwork.StartupNetwork()
-end
+concommand.Add("sb_testnetwork", function()
+	print(GNetwork.GetGVar("test", "Balls"))
+end )
