@@ -17,3 +17,7 @@
 -------------------------------------------------------------------------- */
 
 include("shared.lua")
+
+function GM:Initialize()
+	GNetwork.StartupNetwork()
+end
