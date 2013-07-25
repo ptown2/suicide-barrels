@@ -1,7 +1,10 @@
+-- Set Global Vars
 function GM:SetState( state, timewait )
-	self.STATES[ self:GetState() ].End( self )
+	local laststate = self:GetState()
+
+	self:CallStateFunction( laststate, "End", state )
+	self:CallStateFunction( state, "Start", laststate )
 	SetGlobalInt( "sb_state", state )
-	self.STATES[ self:GetState() ].Start( self )
 end
 
 function GM:SetTime( time )
@@ -12,29 +15,58 @@ function GM:AddTime( fTime )
 	SetGlobalFloat( "sb_time", CurTime() + fTime )
 end
 
-function GM:Think()
-	self.STATES[ self:GetState() ].Think( self )
-end
-
+-- Round Management
 function GM:EndRound( teamid )
 	self:SetState( STATE_ENDING )
 end
 
-function GM:CheckTeams()
+function GM:SelectVictim()
+	if ( #team.GetPlayers( TEAM_HUMAN ) <= 1 ) then return end
+
+	local victim = table.Random( player.GetAll() )
+	victim:SetTeam( TEAM_OIL )
+	victim:KillSilent()
+	victim:Spawn()
+
+	util.ChatToPlayers( victim:Name() .." has turned into a barrel. Watch out!" )
+end
+
+function GM:CheckTeams( pl )
 	if ( self:GetState() ~= STATE_PLAYING ) then return end
 
-	if ( self:GetTime() <= CurTime() ) && ( #team.GetPlayers( TEAM_HUMAN ) >= 1 ) then
+	local thumanc, tbarrelc = #team.GetPlayers( TEAM_HUMAN ), #team.GetPlayers( TEAM_OIL )
+	if IsValid( pl ) && pl:IsPlayer() then
+		if ( pl:Team() == TEAM_HUMAN ) then
+			thumanc = thumanc - 1
+		else
+			tbarrelc = tbarrelc - 1
+		end
+	end
+
+	-- Check if the time is over and there are survivors or no humans left to turn into barrels.
+	if ( ( self:GetTime() <= CurTime() ) && (thumanc >= 1) ) || ( ( tbarrelc <= 0 ) && ( thumanc <= 1 ) ) then
+		util.ChatToPlayers( "The humans have survived." )
 		self:EndRound( TEAM_HUMAN )
 		return
 	end
 
-	if ( #team.GetPlayers( TEAM_HUMAN ) <= 0 ) then
+	-- What if the previous barrel left?
+	if ( tbarrelc <= 0 ) && ( thumanc > 1 ) then
+		util.ChatToPlayers( "The previous barrel has left the game. Picking another victim." )
+		self:SetState( STATE_PREPARING )
+		return
+	end
+
+	-- What if everyone died?
+	if ( thumanc <= 0 ) then
+		util.ChatToPlayers( "The barrels have taken over the human race." )
 		self:EndRound( TEAM_OIL )
 		return
 	end
 
-	if ( #team.GetPlayers( TEAM_OIL ) <= 0 ) && ( #team.GetPlayers( TEAM_HUMAN ) > 1 ) then
-		self:SetState( STATE_PREPARING )
+	-- What if nobody's here?
+	if ( thumanc <= 0 ) && ( tbarrelc <= 0 ) then
+		self:SetState( STATE_ENDING )
 		return
 	end
 end

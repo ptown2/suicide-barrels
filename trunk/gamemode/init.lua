@@ -37,21 +37,27 @@ function GM:Initialize()
 	self:PrecacheResources()
 	self:SetupSpawns()
 
-	self.m_State		= 0
-	self.m_StateTime	= 0
-	self.m_TimeLeft		= 0
+	self:SetState( STATE_NONE )
+end
+
+function GM:Think()
+	self:CallStateFunction( self:GetState(), "Think" )
 end
 
 function GM:PlayerInitialSpawn( pl )
-	if ( self:GetState() == STATE_PLAYING || self:GetState() == STATE_ENDING ) then
+	pl:SetTeam( TEAM_HUMAN )
+
+	if ( self:GetState() == STATE_NONE ) && ( #player.GetAll() > 1 ) then
+		self:SetState( STATE_WAITING )
+	elseif ( self:GetState() == STATE_PLAYING || self:GetState() == STATE_ENDING ) then
 		pl:SetTeam( TEAM_OIL )
 	end
 
-	pl:SetTeam( TEAM_HUMAN )
+	self:CheckTeams()
 end
 
 function GM:PlayerDisconnected( pl )
-	self:CheckTeams()
+	self:CheckTeams( pl )
 end
 
 function GM:OnPlayerChangedTeam( pl )
@@ -66,7 +72,7 @@ function GM:PlayerSpawn( pl )
 	pl:SetCanZoom( false )
 	pl:SetNoCollideWithTeammates( true )
 
-	if ( pl:Team() == TEAM_HUMAN ) && ( self:GetState() ~= STATE_PLAYING ) then
+	if ( pl:Team() == TEAM_HUMAN ) then
 		self:SetupHuman( pl )
 	else
 		self:SetupBarrel( pl )
@@ -106,6 +112,7 @@ end
 
 function GM:KeyPress( pl, key )
 	if !pl:Alive() then return end
+	if ( self:GetState() ~= STATE_PLAYING ) then return end
 
 	if ( pl:Team() == TEAM_OIL ) then
 		if ( key == IN_ATTACK ) && ( pl.CanExplode <= CurTime() ) then
