@@ -1,6 +1,6 @@
 /* --------------------------------------------------------------------------
-	Genitrix GM13 Gamemode Base
-	Copyright (C) 2013 David Marcec (ogniK)
+	Suicide Barrels GM13 Edition
+	Copyright (C) 2013  Robert Lind (ptown2) and David Marcec (ogniK)
 
 	This program is free software: you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
