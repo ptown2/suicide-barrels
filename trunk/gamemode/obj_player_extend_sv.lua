@@ -1,5 +1,5 @@
 local meta = FindMetaTable("Player")
-if not meta then return end
+if !meta then return end
 
 function meta:SourceExplode( range )
 	local explode = ents.Create( "env_explosion" )
