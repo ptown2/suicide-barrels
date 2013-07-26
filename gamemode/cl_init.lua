@@ -66,7 +66,7 @@ function GM:HUDShouldDraw( hudn )
 	if !IsValid( MySelf ) then return false end
 
 	if ( MySelf:Team() == TEAM_HUMAN ) then
-		return ( hudn ~= "CHudBattery" ) && ( hudn ~= "CHudAmmo" ) && 
+		return ( hudn ~= "CHudBattery" ) && --( hudn ~= "CHudAmmo" ) && 
 		( hudn ~= "CHudSecondaryAmmo" ) && ( hudn ~= "CHudZoom" ) && 
 		( hudn ~= "CHudWeaponSelection" )
 	end
