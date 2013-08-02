@@ -3,7 +3,7 @@ local PLAYER = {}
 PLAYER.DisplayName			= "Barrel"
 
 PLAYER.WalkSpeed 			= 200
-PLAYER.RunSpeed				= 270
+PLAYER.RunSpeed				= 285
 PLAYER.MaxHealth			= 1
 
 function PLAYER:CalcView( pl, origin, angles, fov )
@@ -40,7 +40,7 @@ function PLAYER:OnKeyPress( pl, key )
 		timer.Simple( 0.5, function() if IsValid( pl ) && pl:Alive() then pl:EmitSound( "Grenade.Blip" ) end end )
 		timer.Simple( 1.0, function() if IsValid( pl ) && pl:Alive() then pl:EmitSound( "Grenade.Blip" ) end end )
 		timer.Simple( 1.5, function() if IsValid( pl ) && pl:Alive() then pl:EmitSound( "Weapon_CombineGuard.Special1" ) end end )
-		timer.Simple( 2.5, function() if IsValid( pl ) && pl:Alive() then pl:SourceExplode( 128 ) end end )
+		timer.Simple( 2.5, function() if IsValid( pl ) && pl:Alive() then pl:SourceExplode( 156 ) end end )
 		pl.CanExplode = CurTime() + 3
 	elseif ( key == IN_ATTACK2 ) && ( pl.CanTaunt <= CurTime() ) then
 		pl:EmitSound( table.Random( GAMEMODE.TAUNTS ), 100, math.random( 150, 175 ) )
@@ -54,7 +54,7 @@ end
 
 function PLAYER:OnPlayerDeath( pl, attacker )
 	if ( pl ~= attacker ) then
-		pl:SourceExplode( 96 )
+		pl:SourceExplode( 108 )
 	end
 end
 
