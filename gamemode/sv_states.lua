@@ -41,12 +41,8 @@ end
 GM.STATES[STATE_WAITING].End = function( self )
 	for _, pl in pairs( player.GetAll() ) do
 		pl:SetTeam( TEAM_HUMAN )
-		pl:SetHealth( pl:GetMaxHealth() )
-		
-		if !pl:Alive() then
-			pl:KillSilent()
-			pl:Spawn()
-		end
+		pl:KillSilent()
+		pl:Spawn()
 	end
 end
 
@@ -97,11 +93,7 @@ GM.STATES[STATE_ENDING].End = function( self )
 
 	for _, pl in pairs( player.GetAll() ) do
 		pl:SetTeam( TEAM_HUMAN )
-		pl:SetHealth( pl:GetMaxHealth() )
-
-		if !pl:Alive() then
-			pl:KillSilent()
-			pl:Spawn()
-		end
+		pl:KillSilent()
+		pl:Spawn()
 	end
 end

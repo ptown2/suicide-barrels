@@ -17,7 +17,7 @@
 -------------------------------------------------------------------------- */
 
 include( "shared.lua" )
-
+include( "cl_hud.lua" )
 
 -- This is to handle the LocalPlayer in a way where you don't IsValid 1000 times.
 MySelf = MySelf or NULL
@@ -29,7 +29,6 @@ hook.Add( "InitPostEntity", "GetLocal", function()
 	end
 end )
 
-
 function GM:CreateFonts()
 	--surface.CreateFont( "HUDBig", {} )
 end
@@ -39,50 +38,25 @@ function GM:Initialize()
 	self:PrecacheResources()
 end
 
-local trace = { mask = MASK_SHOT, mins = Vector( -1, -1, -1 ), maxs = Vector( 1, 1, 1 ), filter = {} }
-function GM:HUDDrawTargetID( teamid )
-	local start = EyePos()
-	trace.start = start
-	trace.endpos = start + EyeAngles():Forward() * 2048
-	trace.filter[1] = MySelf
-	trace.filter[2] = MySelf:GetObserverTarget()
-
-	local plent = util.TraceLine(trace).Entity		--TraceLine or TraceHull...
-	if plent:IsPlayer() && ( plent:Team() == teamid ) then
-		surface.SetFont( "GModNotify" )
-
-		local wid, hei = surface.GetTextSize( plent:Name() )
-		local tc = team.GetColor( plent:Team() )
-		draw.RoundedBox( 4, ( ScrW() / 2 ) - ( wid * 0.5 ) - 6, ( ScrH() / 2 ) - 50, wid + 12, 32, Color( 0, 0, 0, 255 ) )
-		draw.DrawText( plent:Name(), "GModNotify", ( ScrW() / 2 ), ( ScrH() / 2 ) - 42, Color( tc.r, tc.g, tc.b, 255 ), TEXT_ALIGN_CENTER )
-	end
-end
-
-function GM:HUDItemPickedUp()
-	return false
-end
-
-function GM:HUDShouldDraw( hudn )
+function GM:ShouldDrawLocalPlayer()
 	if !IsValid( MySelf ) then return false end
 
-	if ( MySelf:Team() == TEAM_HUMAN ) then
-		return ( hudn ~= "CHudBattery" ) && --( hudn ~= "CHudAmmo" ) && 
-		( hudn ~= "CHudSecondaryAmmo" ) && ( hudn ~= "CHudZoom" ) && 
-		( hudn ~= "CHudWeaponSelection" )
-	end
-
-	return ( hudn ~= "CHudHealth" ) && ( hudn ~= "CHudBattery" ) &&
-	( hudn ~= "CHudAmmo" ) && ( hudn ~= "CHudSecondaryAmmo" ) &&
-	( hudn ~= "CHudZoom" ) && ( hudn ~= "CHudDamageIndicator" ) &&
-	( hudn ~= "CHudWeaponSelection" )
+	return player_manager.RunClass( MySelf, "ShouldDrawLocalPlayer" )
 end
 
-function GM:HUDPaint()
-	if !IsValid( MySelf ) then return end
+function GM:CalcView( pl, origin, angles, fov, znear, zfar )
+	local plview = player_manager.RunClass( pl, "CalcView", pl, origin, angles, fov )
 
-	draw.DrawText( self:GetState(), "GModNotify", 32, 32, Color( 255, 255, 255, 255 ), TEXT_ALIGN_LEFT )
-	draw.DrawText( math.max( 0, self:GetTime() - CurTime() ), "GModNotify", 32, 64, Color( 255, 255, 255, 255 ), TEXT_ALIGN_LEFT )
+	return self.BaseClass.CalcView( self, pl, plview.origin, plview.angles, plview.fov, znear, zfar )
+end
 
-	self:HUDDrawTargetID( MySelf:Team() )
-	self:DrawDeathNotice( 0.5, 0.025 )
+local ViewHullMins = Vector( -8, -8, -8 )
+local ViewHullMaxs = Vector( 8, 8, 8 )
+function GM:SetThirdPerson( pl, origin, angles )
+	if !origin || !angles then return end
+
+	local allplayers = player.GetAll()
+	local tr = util.TraceHull( { start = origin, endpos = origin + angles:Forward() * -82 + angles:Up() * -12, mask = MASK_SHOT, filter = allplayers, mins = ViewHullMins, maxs = ViewHullMaxs } )
+
+	return tr.HitPos + tr.HitNormal * 2
 end

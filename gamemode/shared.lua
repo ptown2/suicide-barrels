@@ -18,19 +18,23 @@
 
 GM.Name		= "Suicide Barrels"
 GM.Author	= "ogniK & ptown2"
-GM.Email	= ""
-GM.Website	= ""
-GM.Revision	= 4
+GM.Email	= "xptown2x@gmail.com"
+GM.Website	= "http://ptown2.0fees.net/"
+GM.Revision	= 22
 
 include( "sh_globals.lua" )
 include( "sh_loading.lua" )
+include( "sh_utils.lua" )
+
+include( "obj_weapon_extend_sh.lua" )
+
+include( "classes/class_default.lua" )
+include( "classes/class_human.lua" )
+include( "classes/class_barrel.lua" )
 
 GLoad.LoadDirectory( "modules" )
 
 function GM:PrecacheResources()
-	--util.PrecacheModel()
-	--util.PrecacheSound()
-
 	util.PrecacheModel( "models/props_c17/oildrum001_explosive.mdl" )
 
 	for name, mdl in pairs( player_manager.AllValidModels() ) do
@@ -42,8 +46,6 @@ function GM:GetGameDescription()
 	return self.Name
 end
 
-function util.ChatToPlayers( str )
-	for _, pl in pairs( player.GetAll() ) do
-		pl:PrintMessage( HUD_PRINTTALK, str )
-	end
-end
+--[[function GM:PlayerFootstep( ply, vPos, iFoot, strSoundName, fVolume, pFilter )
+	return true
+end]]

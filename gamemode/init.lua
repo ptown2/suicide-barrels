@@ -17,10 +17,20 @@
 -------------------------------------------------------------------------- */
 
 AddCSLuaFile( "cl_init.lua" )
+AddCSLuaFile( "cl_hud.lua" )
 
 AddCSLuaFile( "shared.lua" )
+AddCSLuaFile( "sh_utils.lua" )
 AddCSLuaFile( "sh_loading.lua" )
 AddCSLuaFile( "sh_globals.lua" )
+
+AddCSLuaFile( "obj_player_extend.lua" )
+AddCSLuaFile( "obj_weapon_extend_sh.lua" )
+
+AddCSLuaFile( "classes/class_default.lua" )
+AddCSLuaFile( "classes/taunt_camera.lua" )
+AddCSLuaFile( "classes/class_human.lua" )
+AddCSLuaFile( "classes/class_barrel.lua" )
 
 include( "shared.lua" )
 
@@ -29,7 +39,6 @@ include( "sv_states.lua" )
 include( "sv_rounds.lua" )
 
 include( "obj_player_extend_sv.lua" )
-
 
 function GM:Initialize()
 	self:AddResources()
@@ -66,17 +75,18 @@ end
 
 function GM:PlayerSpawn( pl )
 	pl:StripWeapons()
-	pl:SetColor( color_white )
-
-	pl:SetCanWalk( true )
-	pl:SetCanZoom( false )
+	pl:StripAmmo()
 	pl:SetNoCollideWithTeammates( true )
+	pl:SetCanZoom( false )
 
 	if ( pl:Team() == TEAM_HUMAN ) then
-		self:SetupHuman( pl )
+		player_manager.SetPlayerClass( pl, "class_human" )
 	else
-		self:SetupBarrel( pl )
+		player_manager.SetPlayerClass( pl, "class_barrel" )
 	end
+
+	player_manager.RunClass( pl, "OnSpawn", pl )
+	player_manager.RunClass( pl, "OnLoadout", pl )
 end
 
 function GM:DoPlayerDeath( pl, attacker, dmginfo )
@@ -88,16 +98,20 @@ function GM:DoPlayerDeath( pl, attacker, dmginfo )
 		attacker:AddFrags( 1 )
 	end
 
-	if ( pl:Team() == TEAM_OIL ) && ( pl ~= attacker ) then
-		pl:SourceExplode( 96 )
-	end
-
-	if ( pl:Team() == TEAM_HUMAN ) then
-		pl:CreateRagdoll()
-		pl:SetTeam( TEAM_OIL )
-	end
+	player_manager.RunClass( pl, "OnPlayerDeath", pl, attacker )
 
 	self:CheckTeams()
+end
+
+function GM:KeyPress( pl, key )
+	if !pl:Alive() then return end
+	if ( self:GetState() ~= STATE_PLAYING ) then return end
+
+	player_manager.RunClass( pl, "OnKeyPress", pl, key )
+end
+
+function GM:CanPlayerSuicide( pl )
+	return player_manager.RunClass( pl, "CanSuicide", pl )
 end
 
 function GM:PlayerShouldTakeDamage( pl, attacker )
@@ -108,28 +122,6 @@ function GM:PlayerShouldTakeDamage( pl, attacker )
 	end
 
 	return true
-end
-
-function GM:KeyPress( pl, key )
-	if !pl:Alive() then return end
-	if ( self:GetState() ~= STATE_PLAYING ) then return end
-
-	if ( pl:Team() == TEAM_OIL ) then
-		if ( key == IN_ATTACK ) && ( pl.CanExplode <= CurTime() ) then
-			timer.Simple( 0.5, function() if IsValid( pl ) && pl:Alive() then pl:EmitSound( "Grenade.Blip" ) end end )
-			timer.Simple( 1.0, function() if IsValid( pl ) && pl:Alive() then pl:EmitSound( "Grenade.Blip" ) end end )
-			timer.Simple( 1.5, function() if IsValid( pl ) && pl:Alive() then pl:EmitSound( "Weapon_CombineGuard.Special1" ) end end )
-			timer.Simple( 2.5, function() if IsValid( pl ) && pl:Alive() then pl:SourceExplode( 128 ) end end )
-			pl.CanExplode = CurTime() + 3
-		elseif ( key == IN_ATTACK2 ) && ( pl.CanTaunt <= CurTime() ) then
-			pl:EmitSound( table.Random( self.TAUNTS ), 100, math.random( 150, 175 ) )
-			pl.CanTaunt = CurTime() + 1.5
-		end
-	end
-end
-
-function GM:CanPlayerSuicide( pl )
-	return ( pl:Team() == TEAM_HUMAN ) && ( self:GetState() == STATE_PLAYING )
 end
 
 function GM:PlayerCanHearPlayersVoice( pl1, pl2 )
