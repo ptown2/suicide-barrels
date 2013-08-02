@@ -24,7 +24,6 @@ AddCSLuaFile( "sh_utils.lua" )
 AddCSLuaFile( "sh_loading.lua" )
 AddCSLuaFile( "sh_globals.lua" )
 
-AddCSLuaFile( "obj_player_extend.lua" )
 AddCSLuaFile( "obj_weapon_extend_sh.lua" )
 
 AddCSLuaFile( "classes/class_default.lua" )

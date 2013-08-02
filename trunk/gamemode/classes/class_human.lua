@@ -7,8 +7,8 @@ PLAYER.RunSpeed				= 275
 PLAYER.MaxHealth			= 100
 
 function PLAYER:HUDPaint()
-	draw.DrawText( GAMEMODE:GetState(), "GModNotify", 32, 32, Color( 255, 255, 255, 255 ), TEXT_ALIGN_LEFT )
-	draw.DrawText( math.max( 0, GAMEMODE:GetTime() - CurTime() ), "GModNotify", 32, 64, Color( 255, 255, 255, 255 ), TEXT_ALIGN_LEFT )
+	draw.DrawText( "State: " ..GAMEMODE:GetState(), "GModNotify", 32, 32, Color( 255, 255, 255, 255 ), TEXT_ALIGN_LEFT )
+	draw.DrawText( "Time Left: " ..math.ceil( math.max( 0, GAMEMODE:GetTime() - CurTime() ) ), "GModNotify", 32, 64, Color( 255, 255, 255, 255 ), TEXT_ALIGN_LEFT )
 end
 
 function PLAYER:CalcView( pl, origin, angles, fov )
