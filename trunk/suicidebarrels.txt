@@ -1,6 +1,6 @@
 "Gamemode"
 {
-	"base"			"sandbox"
+	"base"			"base"
 	"title"			"Suicide Barrels"
 	"version"		"1.0.0.0"
 	"menusystem"	"1"
