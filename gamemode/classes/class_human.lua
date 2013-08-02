@@ -3,7 +3,7 @@ local PLAYER = {}
 PLAYER.DisplayName			= "Human"
 
 PLAYER.WalkSpeed 			= 200
-PLAYER.RunSpeed				= 275
+PLAYER.RunSpeed				= 270
 PLAYER.MaxHealth			= 100
 
 function PLAYER:HUDPaint()
