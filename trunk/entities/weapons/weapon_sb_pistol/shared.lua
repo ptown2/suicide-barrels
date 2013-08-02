@@ -1,9 +1,10 @@
 SWEP.ViewModel			= "models/weapons/v_pistol.mdl"
 SWEP.WorldModel			= "models/weapons/w_pistol.mdl"
 
+SWEP.UseHand			= false
 SWEP.HoldType			= "pistol"
 
-SWEP.ShootSound			= Sound( "Weapon_Pistol.Single" )
+SWEP.ShootSound			= Sound( "Weapon_Pistol.NPC_Single" )
 SWEP.ReloadSound		= Sound( "Weapon_Pistol.Reload" )
 SWEP.EmptySound			= Sound( "Weapon_Pistol.Empty" )
 
@@ -12,20 +13,11 @@ SWEP.Primary.Damage		= 9999
 SWEP.Primary.ClipSize	= 1
 SWEP.Primary.Shots		= 1
 SWEP.Primary.Spread		= 0.2
-SWEP.Primary.Delay		= 0.35
-
--- Meta Functions (Soon to be actually meta)
-function SWEP:GetNextReload()
-	return self.m_NextReload || 0
-end
-
-function SWEP:SetNextReload( fTime )
-	self.m_NextReload = CurTime() + fTime
-end
+SWEP.Primary.Delay		= 0.5
 
 
 function SWEP:Initialize()
-	if !IsValid( self ) then return end	--???
+	if !IsValid( self ) then return end
 
 	self:SetWeaponHoldType( self.HoldType )
 	self:SetDeploySpeed( 1.1 )
@@ -35,39 +27,24 @@ function SWEP:Deploy()
 	self:SetNextReload( 0 )
 	self.IdleAnimation = CurTime() + self:SequenceDuration()
 
-	if SERVER then
-		self.Owner:SetAmmo( 1, "pistol" )
-	end
-
 	return true
 end
 
-function SWEP:TakePrimaryAmmo( num )
-	if SERVER then
-		self.Owner:SetAmmo( num, "pistol" )
-	end
-
-	self:SetClip1( self:Clip1() - num )
-end
-
 function SWEP:Reload()
-	if ( self:Clip1() >= self.Primary.ClipSize ) then return end
 	if !self:DefaultReload( ACT_VM_RELOAD ) then return end
+	if ( self:Clip1() >= self.Primary.ClipSize ) then return end
 
 	if ( self:GetNextReload() <= CurTime() && self:DefaultReload( ACT_VM_RELOAD ) ) then
-		self:SetNextPrimaryFire( CurTime() + self:SequenceDuration() )
 		self:SetNextReload( self:SequenceDuration() )
 		self.IdleAnimation = CurTime() + self:SequenceDuration()
 
 		self.Owner:DoReloadEvent()
-		self:SendWeaponAnim( ACT_VM_RELOAD )
 		self:EmitSound( self.ReloadSound )
+		self:SendWeaponAnim( ACT_VM_RELOAD )
 	end
 end
 
 function SWEP:CanPrimaryAttack()
-	if ( self:GetNextReload() > CurTime() ) then return false end
-
 	if ( self:Clip1() <= 0 ) then
 		self:SetNextPrimaryFire( CurTime() + self.Primary.Delay )
 		self:EmitSound( self.EmptySound )
@@ -82,7 +59,6 @@ function SWEP:PrimaryAttack()
 	if ( !self:CanPrimaryAttack() ) then return end
 
 	self:SetNextPrimaryFire( CurTime() + self.Primary.Delay )
-	self:SetNextReload( self.Primary.Delay / 2 )
 	self.IdleAnimation = CurTime() + self:SequenceDuration()
 
 	local bullet = {}
@@ -93,11 +69,11 @@ function SWEP:PrimaryAttack()
 	bullet.Damage		= self.Primary.Damage
 	bullet.AmmoType		= self.Primary.Ammo
 
+	self:EmitSound( self.ShootSound )
 	self:TakePrimaryAmmo( self.Primary.Shots )
 	self.Owner:FireBullets( bullet )
 	self.Owner:DoAttackEvent()
 	self:SendWeaponAnim( ACT_VM_PRIMARYATTACK )
-	self:EmitSound( self.ShootSound )
 end
 
 
