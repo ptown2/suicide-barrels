@@ -19,7 +19,9 @@
 include( "shared.lua" )
 include( "cl_hud.lua" )
 
--- This is to handle the LocalPlayer in a way where you don't IsValid 1000 times.
+W, H = ScrW(), ScrH()
+
+-- This is to handle the LocalPlayer in a way where you don't get it as a nil value.
 MySelf = MySelf or NULL
 hook.Add( "InitPostEntity", "GetLocal", function()
 	MySelf = LocalPlayer()
@@ -30,7 +32,13 @@ hook.Add( "InitPostEntity", "GetLocal", function()
 end )
 
 function GM:CreateFonts()
-	--surface.CreateFont( "HUDBig", {} )
+	surface.CreateFont( "SB_TextSmall", { font = "tahoma", size = 16, weight = 500, antialias = false, outline = true } )
+	surface.CreateFont( "SB_TextMed", { font = "tahoma", size = 24, weight = 500, antialias = false, outline = true } )
+	surface.CreateFont( "SB_TextHuge", { font = "tahoma", size = 32, weight = 500, antialias = false, outline = true } )
+
+	surface.CreateFont( "SB_TextBSmall", { font = "tahoma", size = 16, weight = 1000, antialias = false, outline = true } )
+	surface.CreateFont( "SB_TextBMed", { font = "tahoma", size = 24, weight = 1000, antialias = false, outline = true } )
+	surface.CreateFont( "SB_TextBHuge", { font = "tahoma", size = 36, weight = 1000, antialias = false, outline = true } )
 end
 
 function GM:Initialize()
@@ -53,7 +61,7 @@ end
 local ViewHullMins = Vector( -8, -8, -8 )
 local ViewHullMaxs = Vector( 8, 8, 8 )
 function GM:SetThirdPerson( pl, origin, angles )
-	if !origin || !angles then return end
+	if !origin || !angles then return end	--I have no idea why its supposed to error like that...
 
 	local allplayers = player.GetAll()
 	local tr = util.TraceHull( { start = origin, endpos = origin + angles:Forward() * -82 + angles:Up() * -12, mask = MASK_SHOT, filter = allplayers, mins = ViewHullMins, maxs = ViewHullMaxs } )

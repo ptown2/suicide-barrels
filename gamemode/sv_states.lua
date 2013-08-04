@@ -1,9 +1,3 @@
-STATE_NONE		= 0
-STATE_WAITING	= 1
-STATE_PREPARING	= 2
-STATE_PLAYING	= 3
-STATE_ENDING	= 4
-
 GM.STATES = {}
 GM.STATES[STATE_NONE]		= {}
 GM.STATES[STATE_WAITING]	= {}
@@ -52,7 +46,8 @@ GM.STATES[STATE_PREPARING].Start = function( self, laststate )
 		self.TimeLeft = self:GetTime() - CurTime()
 	end
 
-	self:AddTime( math.random( 4, 8 ) )
+	self:BroadcastMusic( "music/stingers/industrial_suspense" ..math.random(1, 2).. ".wav" )
+	self:AddTime( math.random( 7, 10 ) )
 end
 GM.STATES[STATE_PREPARING].Think = function( self )
 	if ( self:GetTime() < CurTime() ) then
@@ -67,7 +62,11 @@ end
 
 -- Playing States
 GM.STATES[STATE_PLAYING].Start = function( self )
+	self:BroadcastMusic( "music/HL2_song20_submix4.mp3", 45 )
+
 	self:AddTime( self.TimeLeft || TIME_PLAYING )
+
+	if ( #player.GetAll() <= 1 ) then self:EndRound( TEAM_HUMAN ) return end
 end
 GM.STATES[STATE_PLAYING].Think = function( self )
 	if ( self:GetTime() < CurTime() ) then
@@ -91,6 +90,7 @@ end
 GM.STATES[STATE_ENDING].End = function( self )
 	self.TimeLeft = nil
 
+	game.CleanUpMap()
 	for _, pl in pairs( player.GetAll() ) do
 		pl:SetTeam( TEAM_HUMAN )
 		pl:KillSilent()

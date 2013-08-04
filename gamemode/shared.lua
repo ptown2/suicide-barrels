@@ -32,7 +32,19 @@ include( "classes/class_default.lua" )
 include( "classes/class_human.lua" )
 include( "classes/class_barrel.lua" )
 
-GLoad.LoadDirectory( "modules" )
+GM.TAUNTS = {
+	"vo/npc/male01/behindyou01.wav",
+	"vo/npc/male01/behindyou02.wav",
+	"vo/npc/male01/zombies01.wav",
+	"vo/npc/male01/watchout.wav",
+	"vo/npc/male01/upthere01.wav",
+	"vo/npc/male01/upthere02.wav",
+	"vo/npc/male01/thehacks01.wav",
+	"vo/npc/male01/strider_run.wav",
+	"vo/npc/male01/runforyourlife01.wav",
+	"vo/npc/male01/runforyourlife02.wav",
+	"vo/npc/male01/runforyourlife03.wav",
+}
 
 function GM:PrecacheResources()
 	util.PrecacheModel( "models/props_c17/oildrum001_explosive.mdl" )
@@ -46,6 +58,8 @@ function GM:GetGameDescription()
 	return self.Name
 end
 
---[[function GM:PlayerFootstep( ply, vPos, iFoot, strSoundName, fVolume, pFilter )
-	return true
-end]]
+function GM:PlayerFootstep( pl, vPos, iFoot, strSoundName, fVolume, pFilter )
+	fVolume = fVolume * 2
+
+	return pl:Team() == TEAM_OIL
+end

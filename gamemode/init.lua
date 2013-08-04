@@ -114,6 +114,7 @@ function GM:CanPlayerSuicide( pl )
 end
 
 function GM:PlayerShouldTakeDamage( pl, attacker )
+	if ( self:GetState() ~= STATE_PLAYING ) then return false end
 	if !IsValid( pl ) || !IsValid( attacker ) then return false end
 
 	if ( pl:IsPlayer() && attacker:IsPlayer() ) then
@@ -129,4 +130,15 @@ function GM:PlayerCanHearPlayersVoice( pl1, pl2 )
 	end
 
 	return true
+end
+
+function GM:BroadcastMusic( str, vol )
+	BroadcastLua( "RunConsoleCommand( \"stopsound\" )" )
+
+	if ( vol && tonumber( vol ) ) then
+		timer.Simple( 0.1, function() BroadcastLua( "LocalPlayer():EmitSound( \"" ..str.. "\", " ..vol.. " )" ) end )
+		return
+	end
+
+	timer.Simple( 0.1, function() BroadcastLua( "LocalPlayer():EmitSound( \"" ..str.. "\" )" ) end )
 end

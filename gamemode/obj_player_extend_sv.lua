@@ -10,3 +10,7 @@ function meta:SourceExplode( range )
 	explode:Fire( "Explode", 0, 0 )
 	explode:EmitSound( "weapon_AWP.Single", 400, 400 )
 end
+
+function meta:GonnaExplode()
+	return self:Alive() && self.IsExploding
+end
