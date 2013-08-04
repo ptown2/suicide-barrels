@@ -7,6 +7,10 @@ function GM:SetState( state, timewait )
 	SetGlobalInt( "sb_state", state )
 end
 
+function GM:SetTeamWin( teamid )
+	SetGlobalInt( "sb_teamwin", teamid )
+end
+
 function GM:SetTime( time )
 	SetGlobalFloat( "sb_time", time )
 end
@@ -17,6 +21,7 @@ end
 
 -- Round Management
 function GM:EndRound( teamid )
+	self:SetTeamWin( teamid )
 	self:SetState( STATE_ENDING )
 end
 
@@ -47,6 +52,7 @@ function GM:CheckTeams( pl )
 	if ( ( self:GetTime() <= CurTime() ) && (thumanc >= 1) ) || ( ( tbarrelc <= 0 ) && ( thumanc <= 1 ) ) then
 		util.ChatToPlayers( "The humans have survived." )
 		self:EndRound( TEAM_HUMAN )
+		self:BroadcastMusic( "music/HL1_song25_REMIX3.mp3" )
 		return
 	end
 
@@ -61,6 +67,7 @@ function GM:CheckTeams( pl )
 	if ( thumanc <= 0 ) then
 		util.ChatToPlayers( "The barrels have taken over the human race." )
 		self:EndRound( TEAM_OIL )
+		self:BroadcastMusic( "music/stingers/HL1_stinger_song8.mp3" )
 		return
 	end
 

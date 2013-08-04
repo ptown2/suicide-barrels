@@ -6,19 +6,15 @@ function GM:GetTime()
 	return GetGlobalFloat( "sb_time", 0 )
 end
 
-GM.TAUNTS = {
-	"vo/npc/male01/behindyou01.wav",
-	"vo/npc/male01/behindyou02.wav",
-	"vo/npc/male01/zombies01.wav",
-	"vo/npc/male01/watchout.wav",
-	"vo/npc/male01/upthere01.wav",
-	"vo/npc/male01/upthere02.wav",
-	"vo/npc/male01/thehacks01.wav",
-	"vo/npc/male01/strider_run.wav",
-	"vo/npc/male01/runforyourlife01.wav",
-	"vo/npc/male01/runforyourlife02.wav",
-	"vo/npc/male01/runforyourlife03.wav",
-}
+function GM:GetTeamWinner()
+	return GetGlobalInt( "sb_teamwin", 2 )
+end
+
+STATE_NONE		= 0
+STATE_WAITING	= 1
+STATE_PREPARING	= 2
+STATE_PLAYING	= 3
+STATE_ENDING	= 4
 
 TIME_PLAYING	= 150
 TIME_END		= 10
