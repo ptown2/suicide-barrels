@@ -29,6 +29,10 @@ function GM:HUDPaint()
 		end
 	end
 
+	if ( self:GetState() == STATE_MAPCHANGE ) then
+		draw.DrawText( "Next map in: " ..util.ToMinutesSeconds( math.ceil( math.max( 0, self:GetTime() - CurTime() ) ) ), "SB_TextBMed", W / 2, H * 0.80, Color( 255, 255, 255, 255 ), TEXT_ALIGN_CENTER )
+	end
+
 	player_manager.RunClass( MySelf, "HUDPaint" )
 
 	self:HUDDrawTargetID( MySelf:Team() )
