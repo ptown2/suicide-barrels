@@ -39,6 +39,8 @@ include( "sv_rounds.lua" )
 
 include( "obj_player_extend_sv.lua" )
 
+GM.RoundsLeft = ROUND_LIMIT
+
 function GM:Initialize()
 	self:AddResources()
 	self:AddNetworkStrings()
@@ -136,9 +138,9 @@ function GM:BroadcastMusic( str, vol )
 	BroadcastLua( "RunConsoleCommand( \"stopsound\" )" )
 
 	if ( vol && tonumber( vol ) ) then
-		timer.Simple( 0.1, function() BroadcastLua( "LocalPlayer():EmitSound( \"" ..str.. "\", " ..vol.. " )" ) end )
+		timer.Simple( 0.2, function() BroadcastLua( "LocalPlayer():EmitSound( \"" ..str.. "\", " ..vol.. " )" ) end )
 		return
 	end
 
-	timer.Simple( 0.1, function() BroadcastLua( "LocalPlayer():EmitSound( \"" ..str.. "\" )" ) end )
+	timer.Simple( 0.2, function() BroadcastLua( "LocalPlayer():EmitSound( \"" ..str.. "\" )" ) end )
 end

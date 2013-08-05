@@ -1,9 +1,4 @@
-GM.STATES = {}
-GM.STATES[STATE_NONE]		= {}
-GM.STATES[STATE_WAITING]	= {}
-GM.STATES[STATE_PREPARING]	= {}
-GM.STATES[STATE_PLAYING]	= {}
-GM.STATES[STATE_ENDING]		= {}
+local MapChange = false
 
 function GM:CallStateFunction( state, stype, ... )
 	local state = self.STATES[ state ]
@@ -13,6 +8,14 @@ function GM:CallStateFunction( state, stype, ... )
 		metaFunc( self, ... )
 	end
 end
+
+GM.STATES = {}
+GM.STATES[STATE_NONE]		= {}
+GM.STATES[STATE_WAITING]	= {}
+GM.STATES[STATE_PREPARING]	= {}
+GM.STATES[STATE_PLAYING]	= {}
+GM.STATES[STATE_ENDING]		= {}
+GM.STATES[STATE_MAPCHANGE]	= {}
 
 -- None States
 GM.STATES[STATE_NONE].Start = function( self )
@@ -42,6 +45,10 @@ end
 
 -- Preparing States
 GM.STATES[STATE_PREPARING].Start = function( self, laststate )
+	if ( self.RoundsLeft == 1 ) && ( laststate ~= STATE_PLAYING ) then
+		util.ChatToPlayers( "This is the last round!" )
+	end
+
 	if ( laststate == STATE_PLAYING ) then
 		self.TimeLeft = self:GetTime() - CurTime()
 	end
@@ -76,24 +83,39 @@ end
 
 -- Ending States
 GM.STATES[STATE_ENDING].Start = function( self )
+	self.TimeLeft = nil
+	self.RoundsLeft = math.max( 0, self.RoundsLeft - 1 )
+
 	self:AddTime( TIME_END )
 end
 GM.STATES[STATE_ENDING].Think = function( self )
 	if ( self:GetTime() < CurTime() ) then
-		if ( #player.GetAll() >= 2 ) then
+		if ( self.RoundsLeft <= 0 ) then
+			self:SetState( STATE_MAPCHANGE )
+		elseif ( #player.GetAll() >= 2 ) then
 			self:SetState( STATE_PREPARING )
-		else
+		elseif ( #player.GetAll() <= 1 ) then
 			self:SetState( STATE_NONE )
 		end
 	end
 end
 GM.STATES[STATE_ENDING].End = function( self )
-	self.TimeLeft = nil
-
 	game.CleanUpMap()
+
 	for _, pl in pairs( player.GetAll() ) do
 		pl:SetTeam( TEAM_HUMAN )
 		pl:KillSilent()
 		pl:Spawn()
+	end
+end
+
+GM.STATES[STATE_MAPCHANGE].Start = function( self )
+	hook.Call( "OnMapChange" )
+	self:AddTime( TIME_MAPCHANGE )
+end
+GM.STATES[STATE_MAPCHANGE].Think = function( self )
+	if ( self:GetTime() < CurTime() ) && !MapChange then
+		hook.Call( "LoadNextMap" )
+		MapChange = true
 	end
 end

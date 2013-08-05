@@ -17,5 +17,5 @@ function util.ToMinutesSeconds( seconds )
 	local minutes = math.floor( seconds / 60 )
 	seconds = seconds - minutes * 60
 
-    return string.format( "%02d:%02d", minutes, math.floor( seconds ) )
+    return string.format( "%01d:%02d", minutes, math.floor( seconds ) )
 end

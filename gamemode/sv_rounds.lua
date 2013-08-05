@@ -73,7 +73,7 @@ function GM:CheckTeams( pl )
 
 	-- What if nobody's here?
 	if ( thumanc <= 0 ) && ( tbarrelc <= 0 ) then
-		self:SetState( STATE_ENDING )
+		self:EndRound( TEAM_TIE )
 		return
 	end
 end
