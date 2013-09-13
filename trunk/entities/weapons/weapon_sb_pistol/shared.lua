@@ -1,7 +1,7 @@
-SWEP.ViewModel			= "models/weapons/v_pistol.mdl"
+SWEP.ViewModel			= "models/weapons/c_pistol.mdl"
 SWEP.WorldModel			= "models/weapons/w_pistol.mdl"
 
-SWEP.UseHand			= false
+SWEP.UseHand			= true
 SWEP.HoldType			= "pistol"
 
 SWEP.ShootSound			= Sound( "Weapon_Pistol.NPC_Single" )

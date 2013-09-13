@@ -19,7 +19,6 @@
 include( "shared.lua" )
 include( "cl_hud.lua" )
 
-W, H = ScrW(), ScrH()
 
 -- This is to handle the LocalPlayer in a way where you don't get it as a nil value.
 MySelf = MySelf or NULL
@@ -47,24 +46,46 @@ function GM:Initialize()
 end
 
 function GM:ShouldDrawLocalPlayer()
-	if !IsValid( MySelf ) then return false end
+	if ( !IsValid( MySelf ) ) then return false end
 
 	return player_manager.RunClass( MySelf, "ShouldDrawLocalPlayer" )
 end
 
 function GM:CalcView( pl, origin, angles, fov, znear, zfar )
-	local plview = player_manager.RunClass( pl, "CalcView", pl, origin, angles, fov )
+	local plview = player_manager.RunClass( pl, "CalcView", origin, angles, fov )
 
 	return self.BaseClass.CalcView( self, pl, plview.origin, plview.angles, plview.fov, znear, zfar )
+end
+
+function GM:PostDrawViewModel( vm, pl, weapon )
+	if ( weapon.UseHands || weapon:IsScripted() ) then
+		local hands = pl:GetHands()
+		if ( IsValid( hands ) ) then hands:DrawModel() end
+	end
 end
 
 local ViewHullMins = Vector( -8, -8, -8 )
 local ViewHullMaxs = Vector( 8, 8, 8 )
 function GM:SetThirdPerson( pl, origin, angles )
-	if !origin || !angles then return end	--I have no idea why its supposed to error like that...
+	if ( !origin || !angles ) then return end	--I have no idea why its supposed to error like that...
 
 	local allplayers = player.GetAll()
-	local tr = util.TraceHull( { start = origin, endpos = origin + angles:Forward() * -82 + angles:Up() * -12, mask = MASK_SHOT, filter = allplayers, mins = ViewHullMins, maxs = ViewHullMaxs } )
+	local tr = util.TraceHull( { start = origin, endpos = origin + angles:Forward() * -94 + angles:Up() * -12, mask = MASK_SHOT, filter = allplayers, mins = ViewHullMins, maxs = ViewHullMaxs } )
 
 	return tr.HitPos + tr.HitNormal * 2
+end
+
+net.Receive( "sb_broadmusic", function( len )
+	local str = net.ReadString()
+	local vol = net.ReadInt( 32 )
+
+	RunConsoleCommand( "stopsound" )
+	timer.Simple( 0.1, function() LocalPlayer():EmitSound( str, vol ) end )
+end )
+
+function GM:PreDrawHalos()
+	if !IsValid( MySelf ) then return end
+	if ( MySelf:Team() ~= TEAM_OIL ) then return end
+
+	effects.halo.Add( team.GetPlayers( TEAM_HUMAN ), Color( 0, 0, 255 ), 0, 0, 2, true, true )
 end

@@ -21,9 +21,11 @@ ScoreboardPanel = nil
 IP = "192.168.0.44:27015"
 JoinTime = RealTime()
 
+/*
 net.Receive("GSendIP", function(len)
 	IP = net.ReadString()
 end )
+*/
 
 function CreateScoreboard( )
 	if(ScoreboardPanel != nil) then KillScoreboard( ) end
@@ -52,6 +54,7 @@ function DrawHostname()
 	draw.SimpleText(GetHostName(), "Scoreboard_Hostname", ScoreboardPanel:GetWide( )/2, ScoreboardPanel:GetTall( ) * 0.04, Color( 255, 255, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 	draw.SimpleText(#player.GetAll().."/"..GetConVarString("maxplayers").." Players", "Scoreboard_ServerInfo", ScoreboardPanel:GetWide( )/2, ScoreboardPanel:GetTall( ) * 0.09, Color( 255, 255, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 	
+	/*
 	local width, height = surface.GetTextSize( IP )
 	draw.SimpleText(IP, "Scoreboard_ServerInfo", ScoreboardPanel:GetWide( ) * 0.01, ScoreboardPanel:GetTall( ) - ( height / 2 ), Color( 255, 255, 255 ), TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
 	
@@ -60,6 +63,7 @@ function DrawHostname()
 	local Rank = "User"
 	if( LocalPlayer():IsSuperAdmin() ) then Rank = "Super Admin" elseif( LocalPlayer():IsAdmin() ) then Rank = "Admin" end
 	draw.SimpleText("You're a "..Rank, "Scoreboard_ServerInfo", ScoreboardPanel:GetWide( ) * 0.99, ScoreboardPanel:GetTall( ) - height * 1.3, Color( 255, 255, 255 ), TEXT_ALIGN_RIGHT, TEXT_ALIGN_CENTER)
+	*/
 
 	draw.SimpleText("Joined "..string.NiceTime(RealTime() - JoinTime).." ago", "Scoreboard_PlayTime", ScoreboardPanel:GetWide( ) * 0.99, ScoreboardPanel:GetTall( ) - height/2, Color( 255, 255, 255 ), TEXT_ALIGN_RIGHT, TEXT_ALIGN_CENTER)
 end

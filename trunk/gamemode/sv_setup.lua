@@ -1,11 +1,13 @@
 function GM:AddResources()
 	--resource.AddFile()
+	--resource.AddWorkshop() --Soon
 end
 
 function GM:AddNetworkStrings()
 	util.AddNetworkString( "sb_sendstate" )
 	util.AddNetworkString( "sb_sendtime" )
 	util.AddNetworkString( "sb_teamwinner" )
+	util.AddNetworkString( "sb_broadmusic" )
 end
 
 function GM:SetupSpawns()
