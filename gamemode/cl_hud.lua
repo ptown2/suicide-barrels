@@ -1,40 +1,32 @@
+W, H = ScrW(), ScrH()
+
+function draw.TextRotated( text, x, y, color, font, ang )
+	render.PushFilterMag( TEXFILTER.ANISOTROPIC )
+	render.PushFilterMin( TEXFILTER.ANISOTROPIC )
+	surface.SetFont( font )
+	surface.SetTextColor( color )
+	surface.SetTextPos( 0, 0 )
+	local textWidth, textHeight = surface.GetTextSize( text )
+	local rad = -math.rad( ang )
+	local halvedPi = math.pi / 2
+	x = x - ( math.sin( rad + halvedPi ) * textWidth / 2 + math.sin( rad ) * textHeight / 2 )
+	y = y - ( math.cos( rad + halvedPi ) * textWidth / 2 + math.cos( rad ) * textHeight / 2 )
+	local m = Matrix()
+	m:SetAngles( Angle( 0, ang, 0 ) )
+	m:SetTranslation( Vector( x, y, 0 ) )
+	cam.PushModelMatrix( m )
+		surface.DrawText( text )
+	cam.PopModelMatrix()
+	render.PopFilterMag()
+	render.PopFilterMin()
+end
+
 function GM:HUDPaint()
 	if !IsValid( MySelf ) then return end
 
-	if ( self:GetState() == STATE_NONE ) then
-		draw.DrawText( "Requires 2 or more to start. Invite some!", "SB_TextBHuge", W / 2, H * 0.20, Color( 255, 255, 255, 255 ), TEXT_ALIGN_CENTER )
-	end
-
-	if ( self:GetState() == STATE_WAITING ) then
-		draw.DrawText( "Waiting for more players...", "SB_TextBHuge", W / 2, H * 0.20, Color( 255, 255, 255, 255 ), TEXT_ALIGN_CENTER )
-		draw.DrawText( math.ceil( math.max( 0, self:GetTime() - CurTime() ) ), "SB_TextBHuge", W / 2, H * 0.26, Color( 255, 255, 255, 255 ), TEXT_ALIGN_CENTER )
-	end
-
-	if ( self:GetState() == STATE_PREPARING ) then
-		draw.DrawText( "Selecting a victim...", "SB_TextBMed", 16, 16, Color( 255, 255, 255, 255 ), TEXT_ALIGN_LEFT )
-	end
-
-	if ( self:GetState() == STATE_PLAYING ) then
-		draw.DrawText( "Time Remaining: " ..util.ToMinutesSeconds( math.ceil( math.max( 0, self:GetTime() - CurTime() ) ) ), "SB_TextBMed", 16, 44, Color( 255, 255, 255, 255 ), TEXT_ALIGN_LEFT )
-
-		draw.DrawText( "Humans: " ..#team.GetPlayers( TEAM_HUMAN ), "SB_TextBMed", W - 16, 16, Color( 255, 255, 255, 255 ), TEXT_ALIGN_RIGHT )
-		draw.DrawText( "Barrels: " ..#team.GetPlayers( TEAM_OIL ), "SB_TextBMed", W - 16, 44, Color( 255, 255, 255, 255 ), TEXT_ALIGN_RIGHT )
-	end
-
-	if ( self:GetState() == STATE_ENDING ) then
-		if ( self:GetTeamWinner() == TEAM_HUMAN ) then
-			draw.DrawText( "The humans have survived.", "SB_TextBHuge", W / 2, H * 0.20, Color( 255, 255, 255, 255 ), TEXT_ALIGN_CENTER )
-		elseif ( self:GetTeamWinner() == TEAM_OIL ) then
-			draw.DrawText( "The barrels have taken over the human race.", "SB_TextBHuge", W / 2, H * 0.20, Color( 255, 255, 255, 255 ), TEXT_ALIGN_CENTER )
-		end
-	end
-
-	if ( self:GetState() == STATE_MAPCHANGE ) then
-		draw.DrawText( "Next map in: " ..util.ToMinutesSeconds( math.ceil( math.max( 0, self:GetTime() - CurTime() ) ) ), "SB_TextBMed", W / 2, H * 0.80, Color( 255, 255, 255, 255 ), TEXT_ALIGN_CENTER )
-	end
-
 	player_manager.RunClass( MySelf, "HUDPaint" )
 
+	self:CallStateFunction( self:GetState(), "DrawHUD" )
 	self:HUDDrawTargetID( MySelf:Team() )
 	self:DrawDeathNotice( 0.5, 0.025 )
 end

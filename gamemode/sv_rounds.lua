@@ -20,20 +20,47 @@ function GM:AddTime( fTime )
 end
 
 -- Round Management
+function GM:RandomizeBarrels()
+	for _, ent in pairs( ents.FindByClass( "prop_*" ) ) do
+		ent:SetModel( table.Random( self.ValidBarrels ) )
+
+		if self.BarrelSkins[ ent:GetModel() ] then
+			ent:SetSkin( math.random( ent:SkinCount() ) )
+		end
+
+		ent:SetPos( ent:GetPos() + Vector( 0, 0, 32 ) )
+		ent:DropToFloor()
+		ent:Activate()
+		ent:Respawn()
+	end
+end
+
 function GM:EndRound( teamid )
 	self:SetTeamWin( teamid )
 	self:SetState( STATE_ENDING )
 end
 
 function GM:SelectVictim()
+	local numbarrels = math.ceil( #team.GetPlayers( TEAM_HUMAN ) / BAR_PER_HUM )
+
 	if ( #team.GetPlayers( TEAM_HUMAN ) <= 1 ) then return end
+	if ( #team.GetPlayers( TEAM_OIL ) >= numbarrels ) then return end
 
-	local victim = table.Random( player.GetAll() )
-	victim:SetTeam( TEAM_OIL )
-	victim:KillSilent()
-	victim:Spawn()
+	local numbarrels = math.ceil( #team.GetPlayers( TEAM_HUMAN ) / BAR_PER_HUM )
 
-	util.ChatToPlayers( victim:Name() .." has turned into a barrel. Watch out!" )
+	for i = 1, numbarrels do
+		local victim = table.Random( team.GetPlayers( TEAM_HUMAN ) )
+		victim:SetTeam( TEAM_OIL )
+		victim:Spawn()
+
+		if ( numbarrels == 1 ) then
+			util.ChatToPlayers( victim:Name() .." has turned into a barrel. Watch out!" )
+		end
+	end
+
+	if ( numbarrels ~= 1 ) then
+		util.ChatToPlayers( numbarrels .." players have turned into barrels. Watch out!" )
+	end
 end
 
 function GM:CheckTeams( pl )
@@ -52,7 +79,7 @@ function GM:CheckTeams( pl )
 	if ( ( self:GetTime() <= CurTime() ) && (thumanc >= 1) ) || ( ( tbarrelc <= 0 ) && ( thumanc <= 1 ) ) then
 		util.ChatToPlayers( "The humans have survived." )
 		self:EndRound( TEAM_HUMAN )
-		self:BroadcastMusic( "music/HL1_song25_REMIX3.mp3" )
+		self:BroadcastMusic( "music/HL1_song25_REMIX3.mp3", 90 )
 		return
 	end
 
@@ -67,7 +94,7 @@ function GM:CheckTeams( pl )
 	if ( thumanc <= 0 ) then
 		util.ChatToPlayers( "The barrels have taken over the human race." )
 		self:EndRound( TEAM_OIL )
-		self:BroadcastMusic( "music/stingers/HL1_stinger_song8.mp3" )
+		self:BroadcastMusic( "music/stingers/HL1_stinger_song8.mp3", 90 )
 		return
 	end
 

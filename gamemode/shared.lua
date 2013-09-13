@@ -20,11 +20,13 @@ GM.Name		= "Suicide Barrels"
 GM.Author	= "ogniK & ptown2"
 GM.Email	= "xptown2x@gmail.com"
 GM.Website	= "http://ptown2.0fees.net/"
-GM.Revision	= 22
+GM.Revision	= 30
+
 
 include( "sh_globals.lua" )
 include( "sh_loading.lua" )
 include( "sh_utils.lua" )
+include( "sh_states.lua" )
 
 include( "obj_weapon_extend_sh.lua" )
 
@@ -32,19 +34,11 @@ include( "classes/class_default.lua" )
 include( "classes/class_human.lua" )
 include( "classes/class_barrel.lua" )
 
-GM.TAUNTS = {
-	"vo/npc/male01/behindyou01.wav",
-	"vo/npc/male01/behindyou02.wav",
-	"vo/npc/male01/zombies01.wav",
-	"vo/npc/male01/watchout.wav",
-	"vo/npc/male01/upthere01.wav",
-	"vo/npc/male01/upthere02.wav",
-	"vo/npc/male01/thehacks01.wav",
-	"vo/npc/male01/strider_run.wav",
-	"vo/npc/male01/runforyourlife01.wav",
-	"vo/npc/male01/runforyourlife02.wav",
-	"vo/npc/male01/runforyourlife03.wav",
-}
+if file.Exists( GM.FolderName.. "/gamemode/maps/" ..game.GetMap().. ".lua", "LUA" ) then
+	include( "maps/" ..game.GetMap().. ".lua" )
+end
+
+
 
 function GM:PrecacheResources()
 	util.PrecacheModel( "models/props_c17/oildrum001_explosive.mdl" )
@@ -58,8 +52,23 @@ function GM:GetGameDescription()
 	return self.Name
 end
 
+function GM:UpdateAnimation( pl, vel, seq )
+	if ( pl:Team() == TEAM_OIL ) then
+		pl:SetRenderAngles( Angle( 0, 0, 0 ) )
+	end
+end
+
 function GM:PlayerFootstep( pl, vPos, iFoot, strSoundName, fVolume, pFilter )
 	fVolume = fVolume * 2
 
 	return pl:Team() == TEAM_OIL
+end
+
+function GM:CallStateFunction( state, stype, ... )
+	local state = self.STATES[ state ]
+	local metaFunc = state[ stype ]
+
+	if ( state && metaFunc ) then
+		metaFunc( self, ... )
+	end
 end

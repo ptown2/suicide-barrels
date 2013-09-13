@@ -16,6 +16,13 @@
 	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 -------------------------------------------------------------------------- */
 
+--[[
+TODO LIST:
+
+	* Finish the Barrel-O-Vision
+	* Recode some few parts and seperate them as it should be.
+]]
+
 AddCSLuaFile( "cl_init.lua" )
 AddCSLuaFile( "cl_hud.lua" )
 
@@ -23,8 +30,12 @@ AddCSLuaFile( "shared.lua" )
 AddCSLuaFile( "sh_utils.lua" )
 AddCSLuaFile( "sh_loading.lua" )
 AddCSLuaFile( "sh_globals.lua" )
+AddCSLuaFile( "sh_states.lua" )
 
 AddCSLuaFile( "obj_weapon_extend_sh.lua" )
+
+AddCSLuaFile( "maps/sb_maze.lua" )
+AddCSLuaFile( "maps/sb_cookies_barrelmania.lua" )
 
 AddCSLuaFile( "classes/class_default.lua" )
 AddCSLuaFile( "classes/taunt_camera.lua" )
@@ -34,12 +45,10 @@ AddCSLuaFile( "classes/class_barrel.lua" )
 include( "shared.lua" )
 
 include( "sv_setup.lua" )
-include( "sv_states.lua" )
 include( "sv_rounds.lua" )
 
 include( "obj_player_extend_sv.lua" )
 
-GM.RoundsLeft = ROUND_LIMIT
 
 function GM:Initialize()
 	self:AddResources()
@@ -48,6 +57,10 @@ function GM:Initialize()
 	self:SetupSpawns()
 
 	self:SetState( STATE_NONE )
+end
+
+function GM:InitPostEntity()
+	self:RandomizeBarrels()
 end
 
 function GM:Think()
@@ -86,40 +99,76 @@ function GM:PlayerSpawn( pl )
 		player_manager.SetPlayerClass( pl, "class_barrel" )
 	end
 
-	player_manager.RunClass( pl, "OnSpawn", pl )
-	player_manager.RunClass( pl, "OnLoadout", pl )
+	player_manager.RunClass( pl, "OnSpawn" )
+	player_manager.RunClass( pl, "OnLoadout" )
+end
+
+function GM:IsSpawnpointSuitable( pl, spawnpointent, bMakeSuitable )
+	local Pos = spawnpointent:GetPos()
+	local Ents = ents.FindInBox( Pos + Vector( -16, -16, 0 ), Pos + Vector( 16, 16, 64 ) )
+
+	if ( pl:Team() == TEAM_SPECTATOR || pl:Team() == TEAM_UNASSIGNED ) then return true end
+
+	local Blockers = 0
+	for k, v in pairs( Ents ) do
+		if ( IsValid( v ) && v:GetClass() == "player" && v:Alive() ) then
+			Blockers = Blockers + 1
+		end
+	end
+
+	if ( bMakeSuitable ) then return true end
+	if ( Blockers > 0 ) then return false end
+
+	return true
 end
 
 function GM:DoPlayerDeath( pl, attacker, dmginfo )
-	if !IsValid( pl ) || !IsValid( attacker ) then return end
+	if !IsValid( pl ) then return end
 
 	pl:AddDeaths( 1 )
 
-	if ( pl ~= attacker ) then
+	if IsValid( attacker ) && attacker:IsPlayer() && ( pl ~= attacker ) then
 		attacker:AddFrags( 1 )
 	end
 
-	player_manager.RunClass( pl, "OnPlayerDeath", pl, attacker )
+	player_manager.RunClass( pl, "OnPlayerDeath", attacker )
 
 	self:CheckTeams()
+end
+
+function GM:PlayerTick( pl )
+	if !pl:Alive() then return end
+	if ( self:GetState() ~= STATE_PLAYING ) then return end
+
+	player_manager.RunClass( pl, "OnThink" )
 end
 
 function GM:KeyPress( pl, key )
 	if !pl:Alive() then return end
 	if ( self:GetState() ~= STATE_PLAYING ) then return end
 
-	player_manager.RunClass( pl, "OnKeyPress", pl, key )
+	player_manager.RunClass( pl, "OnKeyPress", key )
+end
+
+function GM:KeyRelease( pl, key )
+	if !pl:Alive() then return end
+	if ( self:GetState() ~= STATE_PLAYING ) then return end
+
+	player_manager.RunClass( pl, "OnKeyRelease", key )
+end
+
+function GM:PlayerNoClip( pl )
+	return pl:IsAdmin()
 end
 
 function GM:CanPlayerSuicide( pl )
-	return player_manager.RunClass( pl, "CanSuicide", pl )
+	return player_manager.RunClass( pl, "CanSuicide" )
 end
 
 function GM:PlayerShouldTakeDamage( pl, attacker )
 	if ( self:GetState() ~= STATE_PLAYING ) then return false end
-	if !IsValid( pl ) || !IsValid( attacker ) then return false end
 
-	if ( pl:IsPlayer() && attacker:IsPlayer() ) then
+	if ( IsValid( pl ) && IsValid( attacker ) ) && ( pl:IsPlayer() && attacker:IsPlayer() ) then
 		return ( pl:Team() ~= attacker:Team() ) || ( pl == attacker )
 	end
 
@@ -127,20 +176,28 @@ function GM:PlayerShouldTakeDamage( pl, attacker )
 end
 
 function GM:PlayerCanHearPlayersVoice( pl1, pl2 )
-	if ( pl1:IsPlayer() && pl2:IsPlayer() ) then
+	if ( pl1:IsPlayer() && pl2:IsPlayer() ) && ( self:GetState() ~= STATE_ENDING ) then
 		return ( pl1:Team() == pl2:Team() )
 	end
 
 	return true
 end
 
+function GM:GetFallDamage( pl, speed )
+	if ( pl:Team() == TEAM_OIL ) then return 0 end
+
+	speed = speed - 225
+
+	return ( speed / 25 ) * 3
+end
+
+function GM:SetupPlayerVisibility( pl )
+	AddOriginToPVS( pl:GetPos() )
+end
+
 function GM:BroadcastMusic( str, vol )
-	BroadcastLua( "RunConsoleCommand( \"stopsound\" )" )
-
-	if ( vol && tonumber( vol ) ) then
-		timer.Simple( 0.2, function() BroadcastLua( "LocalPlayer():EmitSound( \"" ..str.. "\", " ..vol.. " )" ) end )
-		return
-	end
-
-	timer.Simple( 0.2, function() BroadcastLua( "LocalPlayer():EmitSound( \"" ..str.. "\" )" ) end )
+	net.Start( "sb_broadmusic" )
+		net.WriteString( str )
+		net.WriteInt( vol, 32 )
+	net.Broadcast()
 end
