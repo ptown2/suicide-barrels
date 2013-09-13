@@ -191,9 +191,9 @@ function GM:GetFallDamage( pl, speed )
 	return ( speed / 25 ) * 3
 end
 
-function GM:SetupPlayerVisibility( pl )
-	AddOriginToPVS( pl:GetPos() )
-end
+//function GM:SetupPlayerVisibility( pl )
+//	AddOriginToPVS( pl:GetPos() )
+//end
 
 function GM:BroadcastMusic( str, vol )
 	net.Start( "sb_broadmusic" )
