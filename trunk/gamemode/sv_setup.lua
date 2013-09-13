@@ -1,6 +1,7 @@
 function GM:AddResources()
-	--resource.AddFile()
-	--resource.AddWorkshop() --Soon
+	resource.AddWorkshop( "178011330" )
+
+	resource.AddFile( "sound/suicidebarrels/jihad.wav" )
 end
 
 function GM:AddNetworkStrings()
