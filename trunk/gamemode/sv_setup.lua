@@ -1,7 +1,7 @@
 function GM:AddResources()
 	resource.AddWorkshop( "178011330" )
 
-	resource.AddFile( "sound/suicidebarrels/jihad.wav" )
+	--resource.AddFile( "sound/suicidebarrels/jihad.wav" )
 end
 
 function GM:AddNetworkStrings()
@@ -13,5 +13,7 @@ end
 
 function GM:SetupSpawns()
 	team.SetSpawnPoint( TEAM_HUMAN, { "info_player_start", "info_player_terrorist", "info_player_rebel", "info_player_deathmatch" } )
-	team.SetSpawnPoint( TEAM_BARREL, { "info_player_start", "info_player_counterterrorist", "info_player_combine" } )
+	team.SetSpawnPoint( TEAM_BARREL, self.PropSpawns )
 end
+
+//{ "info_player_start", "info_player_counterterrorist", "info_player_combine" }

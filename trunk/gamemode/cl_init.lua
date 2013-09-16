@@ -19,7 +19,6 @@
 include( "shared.lua" )
 include( "cl_hud.lua" )
 
-
 -- This is to handle the LocalPlayer in a way where you don't get it as a nil value.
 MySelf = MySelf or NULL
 hook.Add( "InitPostEntity", "GetLocal", function()
@@ -29,6 +28,7 @@ hook.Add( "InitPostEntity", "GetLocal", function()
 		hook.Remove( "GetLocal" )
 	end
 end )
+
 
 function GM:CreateFonts()
 	surface.CreateFont( "SB_TextSmall", { font = "tahoma", size = 16, weight = 500, antialias = false, outline = true } )
@@ -57,6 +57,13 @@ function GM:CalcView( pl, origin, angles, fov, znear, zfar )
 	return self.BaseClass.CalcView( self, pl, plview.origin, plview.angles, plview.fov, znear, zfar )
 end
 
+function GM:PreDrawHalos()
+	if ( !IsValid( MySelf ) ) then return end
+	if ( MySelf:Team() ~= TEAM_OIL ) then return end
+
+	effects.halo.Add( team.GetPlayers( TEAM_HUMAN ), Color( 0, 0, 255 ), 0, 0, 2, true, true )
+end
+
 function GM:PostDrawViewModel( vm, pl, weapon )
 	if ( weapon.UseHands || weapon:IsScripted() ) then
 		local hands = pl:GetHands()
@@ -75,17 +82,13 @@ function GM:SetThirdPerson( pl, origin, angles )
 	return tr.HitPos + tr.HitNormal * 2
 end
 
+
 net.Receive( "sb_broadmusic", function( len )
+	if ( !IsValid( MySelf ) ) then return end
+
 	local str = net.ReadString()
 	local vol = net.ReadInt( 32 )
 
 	RunConsoleCommand( "stopsound" )
-	timer.Simple( 0.1, function() LocalPlayer():EmitSound( str, vol ) end )
+	timer.Simple( 0.1, function() MySelf:EmitSound( str, vol ) end )
 end )
-
-function GM:PreDrawHalos()
-	if !IsValid( MySelf ) then return end
-	if ( MySelf:Team() ~= TEAM_OIL ) then return end
-
-	effects.halo.Add( team.GetPlayers( TEAM_HUMAN ), Color( 0, 0, 255 ), 0, 0, 2, true, true )
-end

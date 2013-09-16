@@ -1,12 +1,10 @@
 local PLAYER = {}
 
-PLAYER.DisplayName			= "Normal Barrel"
+PLAYER.DisplayName			= "Patriotic Barrel"
 
-PLAYER.WalkSpeed 			= 175
-PLAYER.RunSpeed				= 275
+PLAYER.WalkSpeed 			= 180
+PLAYER.RunSpeed				= 270
 PLAYER.MaxJumpPower			= 250
-PLAYER.StartRange			= 90
-PLAYER.MaxRange				= 145
 PLAYER.MaxHealth			= 5
 
 function PLAYER:HUDPaint()
@@ -41,8 +39,11 @@ function PLAYER:OnSpawn()
 	local oldhands = self.Player:GetHands()
 	if ( IsValid( oldhands ) ) then oldhands:Remove() end
 
-	--self.Player:SetModel( table.Random( GAMEMODE.ValidBarrels ) )
-	--self.Player:SetSkin( math.random( 0, self.Player:SkinCount() ) )
+	self.Player:SetModel( table.Random( GAMEMODE.ValidBarrels ) )
+
+	if GAMEMODE.BarrelSkins[ self.Player:GetModel() ] then
+		self.Player:SetSkin( math.random( self.Player:SkinCount() ) )
+	end
 
 	self.Player:SetWalkSpeed( self.WalkSpeed )
 	self.Player:SetRunSpeed( self.RunSpeed )
@@ -50,14 +51,11 @@ function PLAYER:OnSpawn()
 	self.Player:SetMaxHealth( self.MaxHealth )
 	self.Player:SetHealth( self.Player:GetMaxHealth() )
 
-	self.Player.CanExplode = CurTime() + 1.5
+	self.Player.CanExplode = CurTime() + 1.25
 	self.Player.CanTaunt = CurTime() + 1
 	self.Player.IsExploding = false
-	self.Player.SpawnPos = self.Player:GetPos()
 	self.Player.SetPhase = false
-	self.Player.ExplosionPower = self.StartRange
-
-	self.Player.SpawnEnt:TemporaryNoCollide()
+	self.Player.ExplosionPower = 100
 
 	--[[local plmin, plmax = self.Player:OBBMins(), self.Player:OBBMaxs()
 	self.Player:SetHull( plmin, plmax )
@@ -65,33 +63,31 @@ function PLAYER:OnSpawn()
 end
 
 function PLAYER:OnKeyPress( key )
-	if ( key == IN_ATTACK ) && ( self.Player.CanExplode <= CurTime() ) && ( !self.Player.IsExploding ) then
-		if ( self.Player:GetPos():Distance( self.Player.SpawnPos ) >= 24 ) then
-			self.Player.IsExploding = true
-		end
+	if ( key == IN_ATTACK ) && ( self.Player.CanExplode <= CurTime() ) then
+		self.Player.IsExploding = true
 	elseif ( key == IN_ATTACK2 ) && ( self.Player.CanTaunt <= CurTime() ) then
-		self.Player:EmitSound( table.Random( GAMEMODE.Taunts ), 105, math.random( 125, 150 ) )
-		self.Player.CanTaunt = CurTime() + 1.2
+		self.Player:EmitSound( table.Random( GAMEMODE.Taunts ), 105, math.random( 150, 175 ) )
+		self.Player.CanTaunt = CurTime() + 1.3
 	end
 end
 
 function PLAYER:OnThink()
 	if self.Player.IsExploding then
-		if ( self.Player.ExplosionPower == self.StartRange ) then
-			self.Player:EmitSound( "suicidebarrels/jihad.wav", 75, math.random( 100, 125 ) )
+		if ( self.Player.ExplosionPower == 100 ) then
+			self.Player:EmitSound( "suicidebarrels/jihad.wav", 100, math.random( 150, 175 ) )
 		end
 
-		self.Player.ExplosionPower = self.Player.ExplosionPower + 0.37
+		self.Player.ExplosionPower = self.Player.ExplosionPower + 0.4
 	end
 
-	if ( self.Player.ExplosionPower >= ( self.MaxRange * 0.85 ) ) && !self.Player.SetPhase then
+	if ( self.Player.ExplosionPower >= 126 ) && !self.Player.SetPhase then
 		self.Player:EmitSound( "Weapon_CombineGuard.Special1" )
 		self.Player.SetPhase = true
 	end
 
-	if ( self.Player.ExplosionPower >= self.MaxRange ) then
+	if ( self.Player.ExplosionPower >= 152 ) then
 		self.Player:KillSilent()
-		self.Player:SourceExplode( self.MaxRange )
+		self.Player:SourceExplode( 152 )
 	end
 end
 
@@ -101,7 +97,7 @@ end
 
 function PLAYER:OnPlayerDeath( attacker )
 	if ( self.Player ~= attacker ) then
-		self.Player:SourceExplode( math.max( self.StartRange, self.Player.ExplosionPower * 0.95 ) )
+		self.Player:SourceExplode( self.Player.ExplosionPower or 100 )
 	end
 end
 

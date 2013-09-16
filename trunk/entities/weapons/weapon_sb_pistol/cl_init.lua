@@ -23,6 +23,6 @@ function SWEP:DrawHUD()
 		draw.TextRotated( "RELOAD", ScrW() - 128, ScrH() - 75, Color( 255, 0, 0, 220 + math.sin(CurTime() * 10) * 35 ) , "SB_TextBHuge", 10 * math.sin( t ) )
 		//draw.DrawText( "RELOAD", "GModNotify", ScrW() / 2, ( ScrH() / 2 ) + 28, Color( 255, 0, 0, 220 + math.sin(CurTime() * 10) * 35 ), TEXT_ALIGN_CENTER )
 	else
-		draw.TextRotated( self:Clip1() .." / ".. self.Primary.ClipSize, ScrW() - 128, ScrH() - 75, Color( 0, 255, 0, 220 + math.sin(CurTime() * 10) * 35 ) , "SB_TextBHuge", 10 * math.sin( t ) )
+		draw.TextRotated( self:Clip1() .." / ".. self.Primary.ClipSize, ScrW() - 128, ScrH() - 75, Color( 0, 255, 0, 220 + math.sin(CurTime() * 10) * 35 ) , "SB_TextBHuge", 7 * math.sin( t ) )
 	end
 end

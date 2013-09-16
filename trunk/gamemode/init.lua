@@ -32,7 +32,11 @@ AddCSLuaFile( "sh_loading.lua" )
 AddCSLuaFile( "sh_globals.lua" )
 AddCSLuaFile( "sh_states.lua" )
 
-AddCSLuaFile( "obj_weapon_extend_sh.lua" )
+AddCSLuaFile( "obj_entity_extend.lua" )
+AddCSLuaFile( "obj_weapon_extend.lua" )
+
+--GM:AddCSFolder( "maps" )
+--GM:AddCSFolder( "classes" )
 
 AddCSLuaFile( "maps/sb_maze.lua" )
 AddCSLuaFile( "maps/sb_cookies_barrelmania.lua" )
@@ -54,17 +58,21 @@ function GM:Initialize()
 	self:AddResources()
 	self:AddNetworkStrings()
 	self:PrecacheResources()
-	self:SetupSpawns()
 
 	self:SetState( STATE_NONE )
 end
 
 function GM:InitPostEntity()
 	self:RandomizeBarrels()
+	self:SetupSpawns()
 end
 
 function GM:Think()
 	self:CallStateFunction( self:GetState(), "Think" )
+end
+
+function GM:OnReloaded()
+	self:SetupSpawns()
 end
 
 function GM:PlayerInitialSpawn( pl )
@@ -101,6 +109,53 @@ function GM:PlayerSpawn( pl )
 
 	player_manager.RunClass( pl, "OnSpawn" )
 	player_manager.RunClass( pl, "OnLoadout" )
+end
+
+local playermins = Vector(-17, -17, 0)
+local playermaxs = Vector(17, 17, 4)
+local LastSpawnPoints = {}
+
+function GM:PlayerSelectSpawn( pl )
+	local tab, potential = {}, {}
+
+	if ( pl:Team() == TEAM_HUMAN ) then
+		local ent = self:PlayerSelectTeamSpawn( pl:Team(), pl )
+
+		if IsValid( ent ) then
+			return ent
+		end
+	else
+		if ( !tab ) || ( #tab == 0 ) then tab = team.GetValidSpawnPoint( pl:Team() ) or {} end
+
+		for _, spawn in pairs( tab ) do
+			if IsValid( spawn ) && spawn:IsInWorld() then
+				local blocked = false
+				local spawnpos = spawn:GetPos()
+
+				for _, ent in pairs( ents.FindInBox( spawnpos + playermins, spawnpos + playermaxs ) ) do
+					for _, pls in pairs( team.GetPlayers( TEAM_HUMAN ) ) do
+						if ( ent:IsPlayer() && !spawninplayer ) || ( pls:GetPos():Distance( ent:NearestPoint( pls:GetPos() ) ) <= self.SpawnDistance ) then
+							blocked = true
+							break
+						end
+					end
+				end
+
+				if !blocked then
+					potential[#potential + 1] = spawn
+				end
+			end
+		end
+
+		local ent = self:GetClosestSpawnPoint( potential, self:GetTeamEpicentre( TEAM_HUMAN ) )
+		if ( !IsValid( ent ) ) then ent = self:PlayerSelectTeamSpawn( pl:Team(), pl ) end
+
+		pl:SetModel( ent:GetModel() )
+		pl:SetSkin( ent:GetSkin() )
+		pl.SpawnEnt = ent
+
+		return ent
+	end
 end
 
 function GM:IsSpawnpointSuitable( pl, spawnpointent, bMakeSuitable )
