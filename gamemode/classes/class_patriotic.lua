@@ -40,10 +40,7 @@ function PLAYER:OnSpawn()
 	if ( IsValid( oldhands ) ) then oldhands:Remove() end
 
 	self.Player:SetModel( table.Random( GAMEMODE.ValidBarrels ) )
-
-	if GAMEMODE.BarrelSkins[ self.Player:GetModel() ] then
-		self.Player:SetSkin( math.random( self.Player:SkinCount() ) )
-	end
+	self.Player:SetSkin( math.random( 0, self.Player:SkinCount() ) )
 
 	self.Player:SetWalkSpeed( self.WalkSpeed )
 	self.Player:SetRunSpeed( self.RunSpeed )

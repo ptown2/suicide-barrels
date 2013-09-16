@@ -111,9 +111,8 @@ function GM:PlayerSpawn( pl )
 	player_manager.RunClass( pl, "OnLoadout" )
 end
 
-local playermins = Vector(-17, -17, 0)
-local playermaxs = Vector(17, 17, 4)
-local LastSpawnPoints = {}
+local playermins = Vector( -17, -17, 0 )
+local playermaxs = Vector( 17, 17, 4 )
 
 function GM:PlayerSelectSpawn( pl )
 	local tab, potential = {}, {}
@@ -121,9 +120,7 @@ function GM:PlayerSelectSpawn( pl )
 	if ( pl:Team() == TEAM_HUMAN ) then
 		local ent = self:PlayerSelectTeamSpawn( pl:Team(), pl )
 
-		if IsValid( ent ) then
-			return ent
-		end
+		return ent
 	else
 		if ( !tab ) || ( #tab == 0 ) then tab = team.GetValidSpawnPoint( pl:Team() ) or {} end
 

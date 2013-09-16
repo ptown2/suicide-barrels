@@ -21,8 +21,8 @@ end
 
 -- Waiting States
 GM.STATES[STATE_WAITING].Start = function( self )
-	util.ChatToPlayers( "Game Starting in 30 seconds." )
-	self:AddTime( 30 )
+	util.ChatToPlayers( "Game Starting in ".. TIME_WAIT .." seconds." )
+	self:AddTime( TIME_WAIT )
 end
 GM.STATES[STATE_WAITING].Think = function( self )
 	if ( self:GetTime() < CurTime() ) then

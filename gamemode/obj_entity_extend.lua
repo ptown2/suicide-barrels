@@ -1,4 +1,4 @@
-local meta = FindMetaTable("Entity")
+local meta = FindMetaTable( "Entity" )
 if !meta then return end
 
 local function nocollidetimer( self, timername )

@@ -19,7 +19,7 @@
 GM.Name		= "Suicide Barrels"
 GM.Author	= "ogniK & ptown2"
 GM.Email	= "xptown2x@gmail.com"
-GM.Website	= "http://ptown2.0fees.net/"
+GM.Website	= "http://ptown2.com/suicide-barrels"
 GM.Revision	= 30
 
 
@@ -42,7 +42,7 @@ end
 
 local temppos
 local function SortByDistance( a, b )
-	return a:GetPos():Distance(temppos) < b:GetPos():Distance(temppos)
+	return a:GetPos():Distance( temppos ) < b:GetPos():Distance( temppos )
 end
 
 function GM:PrecacheResources()
@@ -73,7 +73,6 @@ function GM:GetClosestSpawnPoint( teamid, pos )
 	if type( teamid ) == "table" then
 		spawnpoints = teamid
 	else
-		MsgN( teamid )
 		spawnpoints = team.GetValidSpawnPoint( teamid )
 	end
 
@@ -89,10 +88,10 @@ function GM:GetTeamEpicentre( teamid, nocache )
 		return CachedEpicentres[teamid]
 	end
 
-	local plys = team.GetPlayers(teamid)
+	local plys = team.GetPlayers( teamid )
 	local vVec = Vector(0, 0, 0)
-	for _, pl in pairs(plys) do
-		if pl:Alive() then
+	for _, pl in pairs( plys ) do
+		if ( pl:Alive() ) then
 			vVec = vVec + pl:GetPos()
 		end
 	end
