@@ -38,9 +38,15 @@ end
 
 GM.RoundsLeft		= ROUND_LIMIT
 GM.MaxRounds		= ROUND_LIMIT
+GM.SpawnDistance	= 1280
 GM.LeechesEnabled	= false
 
-GM.TAUNTS = {
+GM.PropSpawns = {
+	"prop_dynamic",
+	"prop_physics"
+}
+
+GM.Taunts = {
 	"vo/npc/male01/behindyou01.wav",
 	"vo/npc/male01/behindyou02.wav",
 	"vo/npc/male01/zombies01.wav",

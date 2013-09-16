@@ -23,12 +23,11 @@ end
 function GM:RandomizeBarrels()
 	for _, ent in pairs( ents.FindByClass( "prop_*" ) ) do
 		ent:SetModel( table.Random( self.ValidBarrels ) )
+		ent:SetSkin( math.random( 0, ent:SkinCount() ) )
 
-		if self.BarrelSkins[ ent:GetModel() ] then
-			ent:SetSkin( math.random( ent:SkinCount() ) )
-		end
+		ent:SetPos( ent:GetPos() + Vector( 0, 0, 16 ) )
+		ent:SetAngles( Angle( 0, 0, 0 ) )
 
-		ent:SetPos( ent:GetPos() + Vector( 0, 0, 32 ) )
 		ent:DropToFloor()
 		ent:Activate()
 		ent:Respawn()

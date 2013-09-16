@@ -28,7 +28,8 @@ include( "sh_loading.lua" )
 include( "sh_utils.lua" )
 include( "sh_states.lua" )
 
-include( "obj_weapon_extend_sh.lua" )
+include( "obj_entity_extend.lua" )
+include( "obj_weapon_extend.lua" )
 
 include( "classes/class_default.lua" )
 include( "classes/class_human.lua" )
@@ -39,6 +40,10 @@ if file.Exists( GM.FolderName.. "/gamemode/maps/" ..game.GetMap().. ".lua", "LUA
 end
 
 
+local temppos
+local function SortByDistance( a, b )
+	return a:GetPos():Distance(temppos) < b:GetPos():Distance(temppos)
+end
 
 function GM:PrecacheResources()
 	util.PrecacheModel( "models/props_c17/oildrum001_explosive.mdl" )
@@ -52,6 +57,56 @@ function GM:GetGameDescription()
 	return self.Name
 end
 
+function GM:CallStateFunction( state, stype, ... )
+	local state = self.STATES[ state ]
+	local metaFunc = state[ stype ]
+
+	if ( state && metaFunc ) then
+		metaFunc( self, ... )
+	end
+end
+
+function GM:GetClosestSpawnPoint( teamid, pos )
+	temppos = pos
+
+	local spawnpoints
+	if type( teamid ) == "table" then
+		spawnpoints = teamid
+	else
+		MsgN( teamid )
+		spawnpoints = team.GetValidSpawnPoint( teamid )
+	end
+
+	table.sort( spawnpoints, SortByDistance )
+
+	return spawnpoints[1]
+end
+
+local CachedEpicentreTimes = {}
+local CachedEpicentres = {}
+function GM:GetTeamEpicentre( teamid, nocache )
+	if ( !nocache ) && ( CachedEpicentres[teamid] ) && ( CurTime() < CachedEpicentreTimes[teamid] ) then
+		return CachedEpicentres[teamid]
+	end
+
+	local plys = team.GetPlayers(teamid)
+	local vVec = Vector(0, 0, 0)
+	for _, pl in pairs(plys) do
+		if pl:Alive() then
+			vVec = vVec + pl:GetPos()
+		end
+	end
+
+	local epicentre = vVec / #plys
+	if ( !nocache ) then
+		CachedEpicentreTimes[teamid] = CurTime() + 0.5
+		CachedEpicentres[teamid] = epicentre
+	end
+
+	return epicentre
+end
+GM.GetTeamEpicenter = GM.GetTeamEpicentre
+
 function GM:UpdateAnimation( pl, vel, seq )
 	if ( pl:Team() == TEAM_OIL ) then
 		pl:SetRenderAngles( Angle( 0, 0, 0 ) )
@@ -64,11 +119,15 @@ function GM:PlayerFootstep( pl, vPos, iFoot, strSoundName, fVolume, pFilter )
 	return pl:Team() == TEAM_OIL
 end
 
-function GM:CallStateFunction( state, stype, ... )
-	local state = self.STATES[ state ]
-	local metaFunc = state[ stype ]
 
-	if ( state && metaFunc ) then
-		metaFunc( self, ... )
+function team.GetValidSpawnPoint( teamid )
+	local t = {}
+
+	for _, ent in pairs( team.GetSpawnPoints( teamid ) ) do
+		if IsValid( ent ) then
+			t[#t + 1] = ent
+		end
 	end
+
+	return t
 end

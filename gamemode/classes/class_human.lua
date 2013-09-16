@@ -3,8 +3,8 @@ local PLAYER = {}
 PLAYER.DisplayName			= "Human"
 
 PLAYER.WalkSpeed 			= 200
-PLAYER.RunSpeed				= 270
-PLAYER.MaxJumpPower			= 220
+PLAYER.RunSpeed				= 290
+PLAYER.MaxJumpPower			= 210
 PLAYER.MaxHealth			= 100
 
 function PLAYER:HUDPaint()
@@ -76,6 +76,7 @@ function PLAYER:OnSpawn()
 
 	self.Player:SetWalkSpeed( self.WalkSpeed )
 	self.Player:SetRunSpeed( self.RunSpeed )
+	self.Player:SetJumpPower( self.MaxJumpPower )
 	self.Player:SetMaxHealth( self.MaxHealth )
 	self.Player:SetHealth( self.Player:GetMaxHealth() )
 
