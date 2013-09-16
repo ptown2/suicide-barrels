@@ -239,25 +239,3 @@ function GM:BroadcastMusic( str, vol )
 		net.WriteInt( vol, 32 )
 	net.Broadcast()
 end
-
--- To check later
-/*
-function GM:IsSpawnpointSuitable( pl, spawnpointent, bMakeSuitable )
-	local Pos = spawnpointent:GetPos()
-	local Ents = ents.FindInBox( Pos + Vector( -16, -16, 0 ), Pos + Vector( 16, 16, 64 ) )
-
-	if ( pl:Team() == TEAM_SPECTATOR || pl:Team() == TEAM_UNASSIGNED ) then return true end
-
-	local Blockers = 0
-	for k, v in pairs( Ents ) do
-		if ( IsValid( v ) && v:GetClass() == "player" && v:Alive() ) then
-			Blockers = Blockers + 1
-		end
-	end
-
-	if ( bMakeSuitable ) then return true end
-	if ( Blockers > 0 ) then return false end
-
-	return true
-end
-*/
