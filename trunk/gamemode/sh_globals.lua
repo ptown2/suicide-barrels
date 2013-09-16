@@ -5,6 +5,7 @@ STATE_PLAYING	= 3
 STATE_ENDING	= 4
 STATE_MAPCHANGE	= 5
 
+TIME_WAIT		= 45
 TIME_PLAYING	= 150
 TIME_MAPCHANGE	= 35
 TIME_END		= 10
@@ -66,10 +67,6 @@ GM.ValidBarrels = {
 	//"models/props_borealis/bluebarrel001.mdl",
 	"models/props_phx/facepunch_barrel.mdl",
 	"models/props_phx/oildrum001_explosive.mdl",
-}
-
-GM.BarrelSkins = {
-	["models/props_c17/oildrum001.mdl"] = true,
 }
 
 -- If a person has no player model then use one of these.
