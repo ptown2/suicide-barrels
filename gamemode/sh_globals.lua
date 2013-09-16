@@ -39,7 +39,7 @@ end
 
 GM.RoundsLeft		= ROUND_LIMIT
 GM.MaxRounds		= ROUND_LIMIT
-GM.SpawnDistance	= 1280
+GM.SpawnDistance	= 1024
 GM.LeechesEnabled	= false
 
 GM.PropSpawns = {
@@ -62,10 +62,10 @@ GM.Taunts = {
 }
 
 GM.ValidBarrels = {
-	"models/props_c17/oildrum001_explosive.mdl",
-	"models/props_c17/oildrum001.mdl",
-	//"models/props_borealis/bluebarrel001.mdl",
 	"models/props_phx/facepunch_barrel.mdl",
+	"models/props_c17/oildrum001_explosive.mdl",
+	//"models/props_borealis/bluebarrel001.mdl",
+	"models/props_c17/oildrum001.mdl",
 	"models/props_phx/oildrum001_explosive.mdl",
 }
 

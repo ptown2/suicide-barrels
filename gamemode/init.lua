@@ -111,11 +111,8 @@ function GM:PlayerSpawn( pl )
 	player_manager.RunClass( pl, "OnLoadout" )
 end
 
-local playermins = Vector( -17, -17, 0 )
-local playermaxs = Vector( 17, 17, 4 )
-
 function GM:PlayerSelectSpawn( pl )
-	local tab, potential = {}, {}
+	local ent, tab, potential = nil, {}, {}
 
 	if ( pl:Team() == TEAM_HUMAN ) then
 		local ent = self:PlayerSelectTeamSpawn( pl:Team(), pl )
@@ -129,9 +126,9 @@ function GM:PlayerSelectSpawn( pl )
 				local blocked = false
 				local spawnpos = spawn:GetPos()
 
-				for _, ent in pairs( ents.FindInBox( spawnpos + playermins, spawnpos + playermaxs ) ) do
+				for _, entss in pairs( ents.FindInBox( spawnpos + Vector( -16, -16, 0 ), spawnpos + Vector( 16, 16, 8 ) ) ) do
 					for _, pls in pairs( team.GetPlayers( TEAM_HUMAN ) ) do
-						if ( ent:IsPlayer() && !spawninplayer ) || ( pls:GetPos():Distance( ent:NearestPoint( pls:GetPos() ) ) <= self.SpawnDistance ) then
+						if ( entss:IsPlayer() ) || ( pls:GetPos():Distance( entss:NearestPoint( pls:GetPos() ) ) <= self.SpawnDistance ) then
 							blocked = true
 							break
 						end
@@ -144,8 +141,16 @@ function GM:PlayerSelectSpawn( pl )
 			end
 		end
 
-		local ent = self:GetClosestSpawnPoint( potential, self:GetTeamEpicentre( TEAM_HUMAN ) )
-		if ( !IsValid( ent ) ) then ent = self:PlayerSelectTeamSpawn( pl:Team(), pl ) end
+		if ( #team.GetPlayers( TEAM_HUMAN ) >= 1 ) then
+			ent = self:GetClosestSpawnPoint( potential, self:GetTeamEpicentre( TEAM_HUMAN ) )
+		else
+			ent = self:PlayerSelectTeamSpawn( pl:Team(), pl )
+		end
+
+		if ( !IsValid( ent ) ) then
+			ent = self:PlayerSelectTeamSpawn( pl:Team(), pl )
+		end
+		MsgN( ent )
 
 		pl:SetModel( ent:GetModel() )
 		pl:SetSkin( ent:GetSkin() )
@@ -153,25 +158,6 @@ function GM:PlayerSelectSpawn( pl )
 
 		return ent
 	end
-end
-
-function GM:IsSpawnpointSuitable( pl, spawnpointent, bMakeSuitable )
-	local Pos = spawnpointent:GetPos()
-	local Ents = ents.FindInBox( Pos + Vector( -16, -16, 0 ), Pos + Vector( 16, 16, 64 ) )
-
-	if ( pl:Team() == TEAM_SPECTATOR || pl:Team() == TEAM_UNASSIGNED ) then return true end
-
-	local Blockers = 0
-	for k, v in pairs( Ents ) do
-		if ( IsValid( v ) && v:GetClass() == "player" && v:Alive() ) then
-			Blockers = Blockers + 1
-		end
-	end
-
-	if ( bMakeSuitable ) then return true end
-	if ( Blockers > 0 ) then return false end
-
-	return true
 end
 
 function GM:DoPlayerDeath( pl, attacker, dmginfo )
@@ -253,3 +239,25 @@ function GM:BroadcastMusic( str, vol )
 		net.WriteInt( vol, 32 )
 	net.Broadcast()
 end
+
+-- To check later
+/*
+function GM:IsSpawnpointSuitable( pl, spawnpointent, bMakeSuitable )
+	local Pos = spawnpointent:GetPos()
+	local Ents = ents.FindInBox( Pos + Vector( -16, -16, 0 ), Pos + Vector( 16, 16, 64 ) )
+
+	if ( pl:Team() == TEAM_SPECTATOR || pl:Team() == TEAM_UNASSIGNED ) then return true end
+
+	local Blockers = 0
+	for k, v in pairs( Ents ) do
+		if ( IsValid( v ) && v:GetClass() == "player" && v:Alive() ) then
+			Blockers = Blockers + 1
+		end
+	end
+
+	if ( bMakeSuitable ) then return true end
+	if ( Blockers > 0 ) then return false end
+
+	return true
+end
+*/
