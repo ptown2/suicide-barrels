@@ -1,4 +1,4 @@
-local meta = FindMetaTable("Player")
+local meta = FindMetaTable( "Player" )
 if !meta then return end
 
 function meta:SourceExplode( range )
@@ -9,10 +9,6 @@ function meta:SourceExplode( range )
 	explode:SetKeyValue( "iMagnitude", range )
 	explode:Fire( "Explode", 0, 0 )
 	explode:EmitSound( "weapon_AWP.Single", 400, 400 )
-end
-
-function meta:GonnaExplode()
-	return ( self:Alive() && self.IsExploding )
 end
 
 function meta:HandlePlayerModel()

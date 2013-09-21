@@ -20,7 +20,7 @@ GM.Name		= "Suicide Barrels"
 GM.Author	= "ogniK & ptown2"
 GM.Email	= "xptown2x@gmail.com"
 GM.Website	= "http://ptown2.com/suicide-barrels"
-GM.Revision	= 30
+GM.Revision	= 33
 
 
 include( "sh_globals.lua" )
@@ -40,15 +40,21 @@ if file.Exists( GM.FolderName.. "/gamemode/maps/" ..game.GetMap().. ".lua", "LUA
 end
 
 
-local temppos
+local temppos = Vector()
+local CachedEpicentreTimes = {}
+local CachedEpicentres = {}
+
 local function SortByDistance( a, b )
 	return a:GetPos():Distance( temppos ) < b:GetPos():Distance( temppos )
 end
 
-function GM:PrecacheResources()
-	util.PrecacheModel( "models/props_c17/oildrum001_explosive.mdl" )
 
-	for name, mdl in pairs( player_manager.AllValidModels() ) do
+function GM:PrecacheResources()
+	for _, mdl in pairs( self.ValidBarrels ) do
+		util.PrecacheModel( mdl )		
+	end
+
+	for _, mdl in pairs( player_manager.AllValidModels() ) do
 		util.PrecacheModel( mdl )
 	end
 end
@@ -66,30 +72,28 @@ function GM:CallStateFunction( state, stype, ... )
 	end
 end
 
-function GM:GetClosestSpawnPoint( teamid, pos )
+function GM:GetClosestSpawnPoint( spawns, pos )
+	local spawnpoints = spawns
 	temppos = pos
-
-	local spawnpoints
-	if type( teamid ) == "table" then
-		spawnpoints = teamid
-	else
-		spawnpoints = team.GetValidSpawnPoint( teamid )
-	end
 
 	table.sort( spawnpoints, SortByDistance )
 
-	return spawnpoints[1]
+	return spawnpoints[ math.random( 1, #spawnpoints ) ]
 end
 
-local CachedEpicentreTimes = {}
-local CachedEpicentres = {}
+function GM:IsOutCircularDistance( pl, ent )
+	if ( !IsValid( pl ) ) then return false end
+
+	return ( pl:GetPos():Distance( ent:NearestPoint( pl:GetPos() ) ) >= self.MaxSpawnDistance ) && ( pl:GetPos():Distance( ent:NearestPoint( pl:GetPos() ) ) <= self.MinSpawnDistance )
+end
+
 function GM:GetTeamEpicentre( teamid, nocache )
 	if ( !nocache ) && ( CachedEpicentres[teamid] ) && ( CurTime() < CachedEpicentreTimes[teamid] ) then
 		return CachedEpicentres[teamid]
 	end
 
 	local plys = team.GetPlayers( teamid )
-	local vVec = Vector(0, 0, 0)
+	local vVec = Vector( 0, 0, 0 )
 	for _, pl in pairs( plys ) do
 		if ( pl:Alive() ) then
 			vVec = vVec + pl:GetPos()
@@ -104,29 +108,19 @@ function GM:GetTeamEpicentre( teamid, nocache )
 
 	return epicentre
 end
-GM.GetTeamEpicenter = GM.GetTeamEpicentre
 
 function GM:UpdateAnimation( pl, vel, seq )
+	if ( !IsValid( pl ) ) then return end
+
 	if ( pl:Team() == TEAM_OIL ) then
 		pl:SetRenderAngles( Angle( 0, 0, 0 ) )
 	end
 end
 
 function GM:PlayerFootstep( pl, vPos, iFoot, strSoundName, fVolume, pFilter )
+	if ( !IsValid( pl ) ) then return false end
+
 	fVolume = fVolume * 2
 
 	return pl:Team() == TEAM_OIL
-end
-
-
-function team.GetValidSpawnPoint( teamid )
-	local t = {}
-
-	for _, ent in pairs( team.GetSpawnPoints( teamid ) ) do
-		if IsValid( ent ) then
-			t[#t + 1] = ent
-		end
-	end
-
-	return t
 end

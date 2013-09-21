@@ -16,6 +16,10 @@ local function nocollidetimer( self, timername )
 	timer.Destroy( timername )
 end
 
+function meta:IsValidBarrel()
+	return GAMEMODE.TrueBarrels[ self:GetModel() ]
+end
+
 function meta:TemporaryNoCollide()
 	for _, e in pairs( ents.FindInBox( self:WorldSpaceAABB() ) ) do
 		if ( e:IsPlayer() && ( e ~= self ) ) then

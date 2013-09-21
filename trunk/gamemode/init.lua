@@ -19,12 +19,15 @@
 --[[
 TODO LIST:
 
-	* Finish the Barrel-O-Vision
+	* Finish the Patriotic Class (get some fireworks entity).
+	* Redo the SWEPs and make a base for it.
 	* Recode some few parts and seperate them as it should be.
 ]]
 
 AddCSLuaFile( "cl_init.lua" )
+AddCSLuaFile( "cl_draw.lua" )
 AddCSLuaFile( "cl_hud.lua" )
+AddCSLuaFile( "cl_network.lua" )
 
 AddCSLuaFile( "shared.lua" )
 AddCSLuaFile( "sh_utils.lua" )
@@ -35,11 +38,7 @@ AddCSLuaFile( "sh_states.lua" )
 AddCSLuaFile( "obj_entity_extend.lua" )
 AddCSLuaFile( "obj_weapon_extend.lua" )
 
---GM:AddCSFolder( "maps" )
---GM:AddCSFolder( "classes" )
-
-AddCSLuaFile( "maps/sb_maze.lua" )
-AddCSLuaFile( "maps/sb_cookies_barrelmania.lua" )
+AddCSLuaFile( "vgui/dmodelselect.lua" )
 
 AddCSLuaFile( "classes/class_default.lua" )
 AddCSLuaFile( "classes/taunt_camera.lua" )
@@ -60,11 +59,19 @@ function GM:Initialize()
 	self:PrecacheResources()
 
 	self:SetState( STATE_NONE )
+	self:SetRounds( ROUND_LIMIT )
 end
 
 function GM:InitPostEntity()
 	self:RandomizeBarrels()
 	self:SetupSpawns()
+
+	if self.MapHandling[ game.GetMap() ] then
+		self.MinSpawnDistance	= self.MapHandling[ game.GetMap() ].Min || 512
+		self.MaxSpawnDistance	= self.MapHandling[ game.GetMap() ].Max || 1024
+
+		self.LeechesEnabled		= self.MapHandling[ game.GetMap() ].Leeches || false
+	end
 end
 
 function GM:Think()
@@ -80,10 +87,11 @@ function GM:PlayerInitialSpawn( pl )
 
 	if ( self:GetState() == STATE_NONE ) && ( #player.GetAll() > 1 ) then
 		self:SetState( STATE_WAITING )
-	elseif ( self:GetState() == STATE_PLAYING || self:GetState() == STATE_ENDING ) then
+	elseif ( self:GetState() == STATE_PLAYING ) || ( self:GetState() == STATE_ENDING ) || ( self:GetState() == STATE_MAPCHANGE ) then
 		pl:SetTeam( TEAM_OIL )
 	end
 
+	self:BroadcastData( pl )
 	self:CheckTeams()
 end
 
@@ -93,6 +101,10 @@ end
 
 function GM:OnPlayerChangedTeam( pl )
 	self:CheckTeams()
+end
+
+function GM:ShowSpare2( pl )
+	pl:SendLua( "MakepPlayerModel()" )
 end
 
 function GM:PlayerSpawn( pl )
@@ -119,16 +131,14 @@ function GM:PlayerSelectSpawn( pl )
 
 		return ent
 	else
-		if ( !tab ) || ( #tab == 0 ) then tab = team.GetValidSpawnPoint( pl:Team() ) or {} end
-
-		for _, spawn in pairs( tab ) do
+		for _, spawn in pairs( team.GetSpawnPoints( pl:Team() ) ) do
 			if IsValid( spawn ) && spawn:IsInWorld() then
 				local blocked = false
 				local spawnpos = spawn:GetPos()
 
-				for _, entss in pairs( ents.FindInBox( spawnpos + Vector( -16, -16, 0 ), spawnpos + Vector( 16, 16, 8 ) ) ) do
+				for _, entss in pairs( ents.FindInBox( spawnpos + Vector( -16, -16, 0 ), spawnpos + Vector( 16, 16, 72 ) ) ) do
 					for _, pls in pairs( team.GetPlayers( TEAM_HUMAN ) ) do
-						if ( entss:IsPlayer() ) || ( pls:GetPos():Distance( entss:NearestPoint( pls:GetPos() ) ) <= self.SpawnDistance ) then
+						if ( entss:IsPlayer() ) || ( self:IsOutCircularDistance( pls, entss ) ) && ( ent:IsValidBarrel() ) then
 							blocked = true
 							break
 						end
@@ -144,13 +154,12 @@ function GM:PlayerSelectSpawn( pl )
 		if ( #team.GetPlayers( TEAM_HUMAN ) >= 1 ) then
 			ent = self:GetClosestSpawnPoint( potential, self:GetTeamEpicentre( TEAM_HUMAN ) )
 		else
-			ent = self:PlayerSelectTeamSpawn( pl:Team(), pl )
+			ent = table.Random( potential )
 		end
 
 		if ( !IsValid( ent ) ) then
 			ent = self:PlayerSelectTeamSpawn( pl:Team(), pl )
 		end
-		MsgN( ent )
 
 		pl:SetModel( ent:GetModel() )
 		pl:SetSkin( ent:GetSkin() )
@@ -162,6 +171,10 @@ end
 
 function GM:DoPlayerDeath( pl, attacker, dmginfo )
 	if !IsValid( pl ) then return end
+
+	if ( !pl:IsValidBarrel() ) then
+		pl:CreateRagdoll()
+	end
 
 	pl:AddDeaths( 1 )
 
@@ -229,13 +242,13 @@ function GM:GetFallDamage( pl, speed )
 	return ( speed / 25 ) * 3
 end
 
-//function GM:SetupPlayerVisibility( pl )
-//	AddOriginToPVS( pl:GetPos() )
-//end
-
-function GM:BroadcastMusic( str, vol )
-	net.Start( "sb_broadmusic" )
-		net.WriteString( str )
-		net.WriteInt( vol, 32 )
-	net.Broadcast()
+function GM:BroadcastData( pl )
+	net.Start( "sb_syncdata" )
+		net.WriteInt( self:GetState(), 4 )
+		net.WriteInt( self:GetTime(), 16 )
+		net.WriteInt( self:GetRoundsLeft(), 8 )
+		net.WriteInt( self:GetTeamWinner(), 4 )
+	net.Send( pl )
 end
+
+function GM:IsSpawnpointSuitable() return true end
