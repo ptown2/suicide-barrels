@@ -17,28 +17,17 @@
 -------------------------------------------------------------------------- */
 
 include( "shared.lua" )
+
+include( "vgui/dmodelselect.lua" )
+
+include( "cl_draw.lua" )
 include( "cl_hud.lua" )
-
--- This is to handle the LocalPlayer in a way where you don't get it as a nil value.
-MySelf = MySelf or NULL
-hook.Add( "InitPostEntity", "GetLocal", function()
-	MySelf = LocalPlayer()
-
-	if IsValid( MySelf ) then
-		hook.Remove( "GetLocal" )
-	end
-end )
+include( "cl_network.lua" )
 
 
-function GM:CreateFonts()
-	surface.CreateFont( "SB_TextSmall", { font = "tahoma", size = 16, weight = 500, antialias = false, outline = true } )
-	surface.CreateFont( "SB_TextMed", { font = "tahoma", size = 24, weight = 500, antialias = false, outline = true } )
-	surface.CreateFont( "SB_TextHuge", { font = "tahoma", size = 32, weight = 500, antialias = false, outline = true } )
+local ViewHullMins = Vector( -8, -8, -8 )
+local ViewHullMaxs = Vector( 8, 8, 8 )
 
-	surface.CreateFont( "SB_TextBSmall", { font = "tahoma", size = 16, weight = 1000, antialias = false, outline = true } )
-	surface.CreateFont( "SB_TextBMed", { font = "tahoma", size = 24, weight = 1000, antialias = false, outline = true } )
-	surface.CreateFont( "SB_TextBHuge", { font = "tahoma", size = 36, weight = 1000, antialias = false, outline = true } )
-end
 
 function GM:Initialize()
 	self:CreateFonts()
@@ -46,9 +35,9 @@ function GM:Initialize()
 end
 
 function GM:ShouldDrawLocalPlayer()
-	if ( !IsValid( MySelf ) ) then return false end
+	if ( !IsValid( LocalPlayer() ) ) then return false end
 
-	return player_manager.RunClass( MySelf, "ShouldDrawLocalPlayer" )
+	return player_manager.RunClass( LocalPlayer(), "ShouldDrawLocalPlayer" )
 end
 
 function GM:CalcView( pl, origin, angles, fov, znear, zfar )
@@ -58,8 +47,8 @@ function GM:CalcView( pl, origin, angles, fov, znear, zfar )
 end
 
 function GM:PreDrawHalos()
-	if ( !IsValid( MySelf ) ) then return end
-	if ( MySelf:Team() ~= TEAM_OIL ) then return end
+	if ( !IsValid( LocalPlayer() ) ) then return end
+	if ( LocalPlayer():Team() ~= TEAM_OIL ) then return end
 
 	effects.halo.Add( team.GetPlayers( TEAM_HUMAN ), Color( 0, 0, 255 ), 0, 0, 2, true, true )
 end
@@ -71,8 +60,6 @@ function GM:PostDrawViewModel( vm, pl, weapon )
 	end
 end
 
-local ViewHullMins = Vector( -8, -8, -8 )
-local ViewHullMaxs = Vector( 8, 8, 8 )
 function GM:SetThirdPerson( pl, origin, angles )
 	if ( !origin || !angles ) then return end	--I have no idea why its supposed to error like that...
 
@@ -82,13 +69,61 @@ function GM:SetThirdPerson( pl, origin, angles )
 	return tr.HitPos + tr.HitNormal * 2
 end
 
-
-net.Receive( "sb_broadmusic", function( len )
-	if ( !IsValid( MySelf ) ) then return end
-
-	local str = net.ReadString()
-	local vol = net.ReadInt( 32 )
+function GM:RunMusic( mid, loop )
+	local mstr, mvol, mloop = GAMEMODE:HandleMusic( mid )
 
 	RunConsoleCommand( "stopsound" )
-	timer.Simple( 0.1, function() MySelf:EmitSound( str, vol ) end )
-end )
+
+	-- Check if the previous looping music exists.
+	if ( self.LoopID && timer.Exists( "music" ..self.LoopID ) ) then
+		timer.Destroy( "music" ..self.LoopID )
+	end
+
+	-- Check if the state had some looping music.
+	if timer.Exists( "music" ..mid ) then
+		timer.Destroy( "music" ..mid )
+	end
+
+	-- Loop or not to loop!
+	if ( mloop ) then
+		self.LoopID = mid
+
+		timer.Simple( 0.1, function() if IsValid( LocalPlayer() ) then LocalPlayer():EmitSound( mstr, mvol ) end end )
+		timer.Create( "music" ..self.LoopID, math.ceil( SoundDuration( mstr ) * 2.2401 ), 0, function() if IsValid( LocalPlayer() ) then LocalPlayer():EmitSound( mstr, mvol ) end end )
+	else
+		timer.Simple( 0.1, function() if IsValid( LocalPlayer() ) then LocalPlayer():EmitSound( mstr, mvol ) end end )
+	end
+end
+
+function GM:HandleMusic( mid )
+	local str, vol, loop = "", 0, false
+
+	if self.MusicID[mid] then
+		local MID = self.MusicID[mid]
+
+		if ( STATE_ENDING ~= mid ) then
+
+			-- Handle any other kind of music
+			if istable( MID[1] ) then
+				local music = table.Random( MID )
+				str, vol, loop = music[1], music[2], music[3]
+			else
+				str, vol, loop = MID[1], MID[2], MID[3]
+			end
+
+		else
+
+			-- Handle team winning music
+			local winner = self:GetTeamWinner()
+			if istable( MID[winner][1] ) then
+				local music = table.Random( MID[winner] )
+				str, vol, loop = music[1], music[2], music[3]
+			else
+				str, vol, loop = MID[winner][1], MID[winner][2], MID[winner][3]
+			end
+
+		end
+	end
+
+	return str, vol, loop
+end

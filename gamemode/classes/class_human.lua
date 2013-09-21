@@ -3,31 +3,22 @@ local PLAYER = {}
 PLAYER.DisplayName			= "Human"
 
 PLAYER.WalkSpeed 			= 200
-PLAYER.RunSpeed				= 290
+PLAYER.RunSpeed				= 280
 PLAYER.MaxJumpPower			= 210
 PLAYER.MaxHealth			= 100
 
 function PLAYER:HUDPaint()
-	CurrentHealth =  math.Approach( CurrentHealth or self.MaxHealth, MySelf:Health(), 0.5 )
+	CurrentHealth =  math.max( 0, math.Approach( CurrentHealth or self.MaxHealth, LocalPlayer():Health(), 0.5 ) )
 
-	if ( GAMEMODE:GetState() == STATE_PLAYING ) then
-		draw.DrawText( "Survive 'til the end!", "SB_TextMed", 16, 16, Color( 255, 255, 255, 255 ), TEXT_ALIGN_LEFT )
-	end
+	local t = RealTime() * ( 10 - 10 * ( CurrentHealth / self.MaxHealth ) )
 
-	--[[
-	surface.SetTexture(health_back)
-	surface.DrawTexturedRect(curX, curY - imagesizey, imagesizex, imagesizey)
+	surface.SetDrawColor( Color( 0, 0, 0, 255 ) )
+	surface.DrawRect( 46, H - 80, 244, 20 )
 
-	if health < maxhealth * 0.25 then
-		colHealth.a = 255 - math.abs(math.sin(RealTime() * 4)) * 160
-		surface.SetDrawColor(colHealth)
-	end
+	surface.SetDrawColor( HSVToColor( ( CurrentHealth / self.MaxHealth ) * 125, 1, ( 1 - ( 0.4 - 0.4 * ( CurrentHealth / self.MaxHealth ) ) ) + ( ( 0.2 - 0.2 * ( CurrentHealth / self.MaxHealth ) ) * math.sin(t) ) ) )
+	surface.DrawRect( 48, H - 78, 240 * ( CurrentHealth / self.MaxHealth ), 16 )
 
-	surface.SetTexture(health_bar)
-	surface.DrawTexturedRectUV(curX, curY - imagesizey, (((health / maxhealth) * 368) + 96) * screens, imagesizey, imagesizex, imagesizey, 1, 1)
-	]]
-
-	draw.DrawText( math.floor( math.max( 0, CurrentHealth ) ), "SB_TextBHuge", 64, H - 96, HSVToColor( ( math.max( 0, CurrentHealth ) / self.MaxHealth ) * 130, 1, 1 ), TEXT_ALIGN_LEFT )
+	draw.DrawText( math.floor( CurrentHealth ), "SB_TextBHuge", 76, H - 102, HSVToColor( ( CurrentHealth / self.MaxHealth ) * 125, 1, 1 ), TEXT_ALIGN_LEFT )
 end
 
 function PLAYER:CalcView( origin, angles, fov )
@@ -44,7 +35,7 @@ function PLAYER:ShouldDrawLocalPlayer()
 end
 
 function PLAYER:OnThink()
-	if ( self.Player:WaterLevel() >= 2 ) then
+	if ( self.Player:WaterLevel() >= 3 ) || ( GAMEMODE.LeechesEnabled && ( self.Player:WaterLevel() >= 1 ) ) then
 		if ( self.Player.NextHurt < CurTime() ) then
 			self.Player:TakeDamage( 5 )
 			self.Player:EmitSound( Sound( "player/pl_drown" .. math.random( 1, 3 ) .. ".wav" ) )
@@ -81,7 +72,6 @@ function PLAYER:OnSpawn()
 	self.Player:SetHealth( self.Player:GetMaxHealth() )
 
 	self.Player.NextHurt = 0
-	--self.Player:ResetHull()
 end
 
 function PLAYER:OnLoadout()
@@ -94,8 +84,6 @@ function PLAYER:CanSuicide()
 end
 
 function PLAYER:OnPlayerDeath( attacker )
-	self.Player:CreateRagdoll()
-
 	if ( GAMEMODE:GetState() == STATE_PLAYING ) then
 		self.Player:SetTeam( TEAM_OIL )
 	end

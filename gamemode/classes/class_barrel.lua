@@ -3,16 +3,14 @@ local PLAYER = {}
 PLAYER.DisplayName			= "Normal Barrel"
 
 PLAYER.WalkSpeed 			= 175
-PLAYER.RunSpeed				= 275
-PLAYER.MaxJumpPower			= 250
+PLAYER.RunSpeed				= 300
+PLAYER.MaxJumpPower			= 260
 PLAYER.StartRange			= 90
-PLAYER.MaxRange				= 145
+PLAYER.MaxRange				= 140
 PLAYER.MaxHealth			= 5
 
 function PLAYER:HUDPaint()
 	if ( GAMEMODE:GetState() == STATE_PLAYING ) then
-		draw.DrawText( "Eliminate the humans!", "SB_TextMed", 16, 16, Color( 255, 255, 255, 255 ), TEXT_ALIGN_LEFT )
-
 		for _, pl in pairs( team.GetPlayers( TEAM_HUMAN ) ) do
 			local pos = pl:LocalToWorld( pl:OBBCenter() )
 			local dpos = pos:ToScreen()
@@ -20,7 +18,7 @@ function PLAYER:HUDPaint()
 			draw.DrawText( pl:Health() .."%", "SB_TextBSmall", dpos.x, dpos.y - 16, HSVToColor( ( pl:Health() / 100 ) * 120, 1, 1 ), TEXT_ALIGN_CENTER )
 		end
 
-		draw.DrawText( "LMB to Allah - RMB to Taunt - Hold Shift to Sprint", "SB_TextMed", W / 2, H - 42, Color( 255, 255, 255, 255 ), TEXT_ALIGN_CENTER )
+		draw.DrawText( "LMB to Allah - RMB to Taunt - Hold Shift to Sprint - R to Suicide Unstuck", "SB_TextMed", W / 2, H - 42, Color( 255, 255, 255, 255 ), TEXT_ALIGN_CENTER )
 	end
 end
 
@@ -41,9 +39,6 @@ function PLAYER:OnSpawn()
 	local oldhands = self.Player:GetHands()
 	if ( IsValid( oldhands ) ) then oldhands:Remove() end
 
-	--self.Player:SetModel( table.Random( GAMEMODE.ValidBarrels ) )
-	--self.Player:SetSkin( math.random( 0, self.Player:SkinCount() ) )
-
 	self.Player:SetWalkSpeed( self.WalkSpeed )
 	self.Player:SetRunSpeed( self.RunSpeed )
 	self.Player:SetJumpPower( self.MaxJumpPower )
@@ -58,30 +53,32 @@ function PLAYER:OnSpawn()
 	self.Player.ExplosionPower = self.StartRange
 
 	self.Player.SpawnEnt:TemporaryNoCollide()
-
-	--[[local plmin, plmax = self.Player:OBBMins(), self.Player:OBBMaxs()
-	self.Player:SetHull( plmin, plmax )
-	self.Player:SetHullDuck( plmin, plmax )]]
 end
 
 function PLAYER:OnKeyPress( key )
+	local dist = 24
+
 	if ( key == IN_ATTACK ) && ( self.Player.CanExplode <= CurTime() ) && ( !self.Player.IsExploding ) then
-		if ( self.Player:GetPos():Distance( self.Player.SpawnPos ) >= 24 ) then
+		if ( self.Player:GetPos():Distance( self.Player.SpawnPos ) >= dist ) then
 			self.Player.IsExploding = true
 		end
 	elseif ( key == IN_ATTACK2 ) && ( self.Player.CanTaunt <= CurTime() ) then
-		self.Player:EmitSound( table.Random( GAMEMODE.Taunts ), 105, math.random( 125, 150 ) )
-		self.Player.CanTaunt = CurTime() + 1.2
+		self.Player:EmitSound( table.Random( GAMEMODE.Taunts ), 95, math.random( 150, 175 ) )
+		self.Player.CanTaunt = CurTime() + 1
+	elseif ( key == IN_RELOAD ) then
+		if ( self.Player:GetPos():Distance( self.Player.SpawnPos ) < dist * 1.25 ) then
+			self.Player:KillSilent()
+		end
 	end
 end
 
 function PLAYER:OnThink()
 	if self.Player.IsExploding then
 		if ( self.Player.ExplosionPower == self.StartRange ) then
-			self.Player:EmitSound( "suicidebarrels/jihad.wav", 75, math.random( 100, 125 ) )
+			self.Player:EmitSound( "suicidebarrels/jihad.wav", 75, math.random( 125, 150 ) )
 		end
 
-		self.Player.ExplosionPower = self.Player.ExplosionPower + 0.37
+		self.Player.ExplosionPower = self.Player.ExplosionPower + 0.35
 	end
 
 	if ( self.Player.ExplosionPower >= ( self.MaxRange * 0.85 ) ) && !self.Player.SetPhase then

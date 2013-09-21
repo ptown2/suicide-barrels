@@ -4,62 +4,76 @@ function GM:SetState( state, timewait )
 
 	self:CallStateFunction( laststate, "End", state )
 	self:CallStateFunction( state, "Start", laststate )
-	SetGlobalInt( "sb_state", state )
+	self.State = state
+
+	net.Start( "sb_syncstate" )
+		net.WriteInt( self.State, 4 )
+	net.Broadcast()
+end
+
+function GM:SetRounds( rounds )
+	self.RoundsLeft = rounds
+
+	net.Start( "sb_syncrounds" )
+		net.WriteInt( self.RoundsLeft, 8 )
+	net.Broadcast()
 end
 
 function GM:SetTeamWin( teamid )
-	SetGlobalInt( "sb_teamwin", teamid )
+	self.TeamWinner = teamid
+
+	net.Start( "sb_syncteam" )
+		net.WriteInt( self.TeamWinner, 4 )
+	net.Broadcast()
 end
 
 function GM:SetTime( time )
-	SetGlobalFloat( "sb_time", time )
+	self.Time = math.floor( CurTime() ) + math.floor( time )
+
+	net.Start( "sb_synctime" )
+		net.WriteInt( self.Time, 16 )
+	net.Broadcast()
 end
 
 function GM:AddTime( fTime )
-	SetGlobalFloat( "sb_time", CurTime() + fTime )
+	self.Time = self.Time + math.floor( fTime )
+
+	net.Start( "sb_synctime" )
+		net.WriteInt( self.Time, 16 )
+	net.Broadcast()
 end
 
 -- Round Management
-function GM:RandomizeBarrels()
-	for _, ent in pairs( ents.FindByClass( "prop_*" ) ) do
-		ent:SetModel( table.Random( self.ValidBarrels ) )
-		ent:SetSkin( math.random( 0, ent:SkinCount() ) )
-
-		ent:SetPos( ent:GetPos() + Vector( 0, 0, 16 ) )
-		ent:SetAngles( Angle( 0, 0, 0 ) )
-
-		ent:DropToFloor()
-		ent:Activate()
-		ent:Respawn()
-	end
-end
-
 function GM:EndRound( teamid )
 	self:SetTeamWin( teamid )
 	self:SetState( STATE_ENDING )
 end
 
 function GM:SelectVictim()
+	local barrels = {}
 	local numbarrels = math.ceil( #team.GetPlayers( TEAM_HUMAN ) / BAR_PER_HUM )
 
 	if ( #team.GetPlayers( TEAM_HUMAN ) <= 1 ) then return end
 	if ( #team.GetPlayers( TEAM_OIL ) >= numbarrels ) then return end
-
-	local numbarrels = math.ceil( #team.GetPlayers( TEAM_HUMAN ) / BAR_PER_HUM )
 
 	for i = 1, numbarrels do
 		local victim = table.Random( team.GetPlayers( TEAM_HUMAN ) )
 		victim:SetTeam( TEAM_OIL )
 		victim:Spawn()
 
-		if ( numbarrels == 1 ) then
-			util.ChatToPlayers( victim:Name() .." has turned into a barrel. Watch out!" )
-		end
+		table.insert( barrels, victim:Name() )
 	end
 
-	if ( numbarrels ~= 1 ) then
-		util.ChatToPlayers( numbarrels .." players have turned into barrels. Watch out!" )
-	end
+	util.ChatToPlayers( util.AndSeparate( barrels ) .. ( #barrels > 1 && " have turned into barrels. Watch out!" || " has turned into a barrel. Watch out!" ) )
+end
+
+function GM:SetLastHuman( pl )
+	self.LastHuman = pl
+
+	pl:StripWeapons()
+	pl:Give( "weapon_sb_last" )
+
+	util.BroadcastLua( "GAMEMODE:RunMusic(  ".. STATE_LASTHUMAN .." )")
 end
 
 function GM:CheckTeams( pl )
@@ -74,17 +88,24 @@ function GM:CheckTeams( pl )
 		end
 	end
 
+	if ( thumanc == 1 ) && ( tbarrelc >= 2 ) && ( !self.LastHuman || !IsValid( self.LastHuman ) ) then
+		local lasthum = team.GetPlayers( TEAM_HUMAN )[1]
+
+		util.ChatToPlayers( lasthum:Name().. " is the last human! Don't let it escape!" )
+		self:SetLastHuman( lasthum )
+		return
+	end
+
 	-- Check if the time is over and there are survivors or no humans left to turn into barrels.
 	if ( ( self:GetTime() <= CurTime() ) && (thumanc >= 1) ) || ( ( tbarrelc <= 0 ) && ( thumanc <= 1 ) ) then
 		util.ChatToPlayers( "The humans have survived." )
 		self:EndRound( TEAM_HUMAN )
-		self:BroadcastMusic( "music/HL1_song25_REMIX3.mp3", 90 )
 		return
 	end
 
 	-- What if the previous barrel left?
 	if ( tbarrelc <= 0 ) && ( thumanc > 1 ) then
-		util.ChatToPlayers( "The previous barrel has left the game. Picking another victim." )
+		util.ChatToPlayers( "All of the barrels left the game. Picking another victim." )
 		self:SetState( STATE_PREPARING )
 		return
 	end
@@ -93,7 +114,6 @@ function GM:CheckTeams( pl )
 	if ( thumanc <= 0 ) then
 		util.ChatToPlayers( "The barrels have taken over the human race." )
 		self:EndRound( TEAM_OIL )
-		self:BroadcastMusic( "music/stingers/HL1_stinger_song8.mp3", 90 )
 		return
 	end
 
