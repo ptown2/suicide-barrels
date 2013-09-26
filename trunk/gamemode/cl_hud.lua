@@ -56,6 +56,6 @@ function GM:HUDShouldDraw( hudn )
 
 	return ( hudn ~= "CHudHealth" ) && ( hudn ~= "CHudBattery" ) &&
 	( hudn ~= "CHudAmmo" ) && ( hudn ~= "CHudSecondaryAmmo" ) &&
-	( hudn ~= "CHudZoom" ) && ( hudn ~= "CHudDamageIndicator" ) &&
-	( hudn ~= "CHudWeaponSelection" )
+	( hudn ~= "CHudZoom" ) && ( hudn ~= "CHudDamageIndicator" )
+	--&& ( hudn ~= "CHudWeaponSelection" )
 end
