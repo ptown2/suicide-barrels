@@ -98,7 +98,7 @@ end
 
 function PLAYER:OnPlayerDeath( attacker )
 	if ( self.Player ~= attacker ) then
-		self.Player:SourceExplode( math.max( self.StartRange, self.Player.ExplosionPower * 0.95 ) )
+		self.Player:SourceExplode( math.floor( math.max( self.StartRange, self.Player.ExplosionPower * 0.95 ) ) )
 	end
 end
 

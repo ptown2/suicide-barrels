@@ -76,7 +76,7 @@ end
 
 function PLAYER:OnLoadout()
 	self.Player:SetAmmo( 9999, "pistol" )
-	self.Player:Give( "weapon_sb_pistol" )
+	self.Player:Give( table.Random( GAMEMODE.Weapons ) )
 end
 
 function PLAYER:CanSuicide()
@@ -86,6 +86,7 @@ end
 function PLAYER:OnPlayerDeath( attacker )
 	if ( GAMEMODE:GetState() == STATE_PLAYING ) then
 		self.Player:SetTeam( TEAM_OIL )
+		GAMEMODE:AddTime( 2 )
 	end
 end
 

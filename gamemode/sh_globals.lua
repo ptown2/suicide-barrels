@@ -31,14 +31,22 @@ GM.TeamWinner		= TEAM_TIE
 GM.RoundsLeft		= ROUND_LIMIT
 GM.MaxRounds		= ROUND_LIMIT
 
-GM.MinSpawnDistance	= 512
-GM.MaxSpawnDistance	= 1024
+GM.MinSpawnDistance	= 256
+GM.MaxSpawnDistance	= 1512
 
 GM.LeechesEnabled	= false
 
 GM.PropSpawns = {
 	"prop_dynamic",
 	"prop_physics"
+}
+
+GM.Weapons = {
+	"weapon_sb_pistol",
+	"weapon_sb_smg",
+	"weapon_sb_pistol",
+	"weapon_sb_magnum",
+	"weapon_sb_pistol",
 }
 
 GM.Taunts = {
@@ -57,8 +65,11 @@ GM.Taunts = {
 
 GM.MapHandling = {
 	["sb_cookies_barrelmania"] = { Min = 256, Max = 768, Leeches = true  },
-	["sb_maze"] = { Min = 128, Max = 512, Leeches = false },
-	["sb_shitbox"] = { Min = 256, Max = 768, Leeches = false },
+	["sb_maze"] = { Min = 64, Max = 512, Leeches = false },
+	["sb_shitbox"] = { Min = 384, Max = 768, Leeches = false },
+
+	["sb_pyramid"] = { Min = 256, Max = 1024, Leeches = false },
+	["sb_pyramid_b2"] = { Min = 256, Max = 1024, Leeches = false },
 }
 
 GM.MusicID = {
@@ -87,7 +98,7 @@ GM.MusicID = {
 
 	[STATE_LASTHUMAN] = {
 		{ "music/HL2_song12_long.mp3", 70, true },
-		{ "music/HL1_song19.mp3", 70, true },
+		--{ "music/HL1_song19.mp3", 70, true },
 	},
 }
 

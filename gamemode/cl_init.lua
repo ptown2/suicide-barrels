@@ -28,10 +28,25 @@ include( "cl_network.lua" )
 local ViewHullMins = Vector( -8, -8, -8 )
 local ViewHullMaxs = Vector( 8, 8, 8 )
 
+GM.FOVLerp			= 1
+GM.CrosshairColor	= Color( 255, 255, 255, 255 )
+GM.CrosshairColor2	= Color( 255, 0, 0, 255 )
 
 function GM:Initialize()
 	self:CreateFonts()
 	self:PrecacheResources()
+end
+
+function GM:Think()
+	if ( !IsValid( LocalPlayer() ) ) then return end
+
+	local wep = LocalPlayer():GetActiveWeapon()
+
+	if IsValid( wep ) && wep.GetIronsights && wep:GetIronsights() then
+		self.FOVLerp = math.Approach( self.FOVLerp, wep.IronsightsMultiplier || 0.6, FrameTime() * 4 )
+	else
+		self.FOVLerp = math.Approach( self.FOVLerp, 1, FrameTime() * 5 )
+	end
 end
 
 function GM:ShouldDrawLocalPlayer()
@@ -88,10 +103,10 @@ function GM:RunMusic( mid, loop )
 	if ( mloop ) then
 		self.LoopID = mid
 
-		timer.Simple( 0.1, function() if IsValid( LocalPlayer() ) then LocalPlayer():EmitSound( mstr, mvol ) end end )
+		timer.Simple( 0.3, function() if IsValid( LocalPlayer() ) then LocalPlayer():EmitSound( mstr, mvol ) end end )
 		timer.Create( "music" ..self.LoopID, math.ceil( SoundDuration( mstr ) * 2.2401 ), 0, function() if IsValid( LocalPlayer() ) then LocalPlayer():EmitSound( mstr, mvol ) end end )
 	else
-		timer.Simple( 0.1, function() if IsValid( LocalPlayer() ) then LocalPlayer():EmitSound( mstr, mvol ) end end )
+		timer.Simple( 0.3, function() if IsValid( LocalPlayer() ) then LocalPlayer():EmitSound( mstr, mvol ) end end )
 	end
 end
 

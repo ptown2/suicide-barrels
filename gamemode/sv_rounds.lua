@@ -71,6 +71,10 @@ function GM:SetLastHuman( pl )
 	self.LastHuman = pl
 
 	pl:StripWeapons()
+	pl:StripAmmo()
+
+	pl:SetHealth( pl:GetMaxHealth() )
+	pl:SetAmmo( 9999, "pistol" )
 	pl:Give( "weapon_sb_last" )
 
 	util.BroadcastLua( "GAMEMODE:RunMusic(  ".. STATE_LASTHUMAN .." )")
